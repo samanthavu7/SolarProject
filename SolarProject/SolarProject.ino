@@ -107,7 +107,13 @@ int device6 = 33;
 int device7 = 35;
 
 // Button
-// const int button = 40;
+int buttonState = 0;
+const int buttonOn = 51;
+const int buttonOff = 49;
+
+// Light
+const int light = 53;
+
 // Time
 unsigned long pM = 0;
 unsigned long index = 0;
@@ -135,6 +141,18 @@ void solar(){
 
     // Listening for inputs.
     case Wait:
+      buttonState = digitalRead(buttonOn);
+      if(buttonState == HIGH){
+        digitalWrite(light, HIGH);
+        Y = 140;
+        tft.fillRect(timeBox, Y, BOXSIZE, tft.height() - Y, WHITE);
+        tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, PASTELGREEN);
+        
+        solarTime = tft.height() - Y;
+        nextPosition = Y;
+        createInterface(solarTime);
+        start = true;
+      }
       digitalWrite(device1, LOW);
       digitalWrite(device2, LOW);
       digitalWrite(device3, LOW);
@@ -164,6 +182,11 @@ void solar(){
       break;
       
     case Execute:
+      buttonState = digitalRead(buttonOff);
+      if(buttonState == HIGH){
+        digitalWrite(light, LOW);
+        start = false;
+      }
       digitalWrite(device1, HIGH);
       digitalWrite(device2, HIGH);
       digitalWrite(device3, HIGH);
@@ -189,6 +212,11 @@ void solar(){
       break;
       
     case Pause:
+      buttonState = digitalRead(buttonOn);
+      if(buttonState == HIGH){
+        digitalWrite(light, HIGH);
+        start = true;
+      }
       if(solarTime <= 0){
         phase = Initial;
         break;
@@ -262,6 +290,11 @@ void setup() {
   digitalWrite(device4, LOW);
   digitalWrite(device5, LOW);
   digitalWrite(device6, LOW);
+
+  pinMode(buttonOn, INPUT);
+  pinMode(buttonOff, INPUT);
+  pinMode(light, OUTPUT);
+  digitalWrite(light, LOW);
 }
 
 void loop() {

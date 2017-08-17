@@ -106,6 +106,22 @@ int device5 = 31;
 int device6 = 33;
 int device7 = 35;
 
+//Phase LED pins: set pinMode() in setup(). digitalWrite() to HIGH at the beginning of each phase
+int initialPhase = 37;
+int waitPhase = 38;
+int executePhase = 39;
+int pausePhase = 40;
+
+//Sensor fail LED pins
+int sensor1fail = 41;
+int sensor2fail = 42;
+int sensor3fail = 43;
+int sensor4fail = 44;
+int sensor5fail = 45;
+int sensor6fail = 46;
+int sensor7fail = 47;
+int sensor8fail = 48;
+
 // Button
 int buttonState = 0;
 const int buttonOn = 51;
@@ -132,6 +148,7 @@ void solar(){
   {
     // Setting up the program.
     case Initial:
+      digitalWrite(initialPhase, HIGH); //light corresponding LED
       solarTime = 0;
       nextPosition = 0;
       start = false;
@@ -141,6 +158,7 @@ void solar(){
 
     // Listening for inputs.
     case Wait:
+      digitalWrite(waitPhase, HIGH);
       buttonState = digitalRead(buttonOn);
       if(buttonState == HIGH){
         digitalWrite(light, HIGH);
@@ -182,6 +200,7 @@ void solar(){
       break;
       
     case Execute:
+      digitalWrite(executePhase, HIGH);
       buttonState = digitalRead(buttonOff);
       if(buttonState == HIGH){
         digitalWrite(light, LOW);
@@ -212,6 +231,7 @@ void solar(){
       break;
       
     case Pause:
+      digitalWrite(pausePhase, HIGH);
       buttonState = digitalRead(buttonOn);
       if(buttonState == HIGH){
         digitalWrite(light, HIGH);
@@ -290,7 +310,35 @@ void setup() {
   digitalWrite(device4, LOW);
   digitalWrite(device5, LOW);
   digitalWrite(device6, LOW);
-
+  
+  pinMode(initialPhase, OUTPUT);
+  pinMode(waitPhase, OUTPUT);
+  pinMode(executePhase, OUTPUT);
+  pinMode(pausePhase, OUTPUT);
+  
+  digitalWrite(initialPhase, LOW);
+  digitalWrite(waitPhase, LOW);
+  digitalWrite(executePhase, LOW);
+  digitalWrite(pausePhase, LOW);
+  
+  pinMode(sensor1fail, OUTPUT);
+  pinMode(sensor2fail, OUTPUT);
+  pinMode(sensor3fail, OUTPUT);
+  pinMode(sensor4fail, OUTPUT);
+  pinMode(sensor5fail, OUTPUT);
+  pinMode(sensor6fail, OUTPUT);
+  pinMode(sensor7fail, OUTPUT);
+  pinMode(sensor8fail, OUTPUT);
+  
+  digitalWrite(sensor1fail, LOW);
+  digitalWrite(sensor2fail, LOW);
+  digitalWrite(sensor3fail, LOW);
+  digitalWrite(sensor4fail, LOW);
+  digitalWrite(sensor5fail, LOW);
+  digitalWrite(sensor6fail, LOW);
+  digitalWrite(sensor7fail, LOW);
+  digitalWrite(sensor8fail, LOW);
+  
   pinMode(buttonOn, INPUT);
   pinMode(buttonOff, INPUT);
   pinMode(light, OUTPUT);

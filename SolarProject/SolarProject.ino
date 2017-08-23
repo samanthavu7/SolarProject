@@ -165,19 +165,6 @@ void solar(){
     case Wait:
       digitalWrite(waitPhase, HIGH);
       
-//       buttonState = digitalRead(buttonOn);
-//       if(buttonState == HIGH){
-//         digitalWrite(light, HIGH);
-//         Y = 140;
-//         tft.fillRect(timeBox, Y, BOXSIZE, tft.height() - Y, WHITE);
-//         tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, PASTELGREEN);
-        
-//         solarTime = tft.height() - Y;
-//         nextPosition = Y;
-//         createInterface(solarTime);
-//         start = true;
-//       }
-      
       if(currentButton == "START") {
         if(digitalRead(buttonDown) == HIGH) {
           currentButton = "BAR";
@@ -191,6 +178,7 @@ void solar(){
           nextPosition = Y;
           createInterface(solarTime);
           start = true;
+          startButton();
         }
       }
       else if(currentButton == "BAR") {
@@ -223,6 +211,7 @@ void solar(){
             currentButton = "START";
             highlight();
           }
+        }
       }
       
       digitalWrite(device1, LOW);

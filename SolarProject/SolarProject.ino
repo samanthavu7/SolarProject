@@ -123,12 +123,9 @@ int sensor7fail = 47;
 int sensor8fail = 48;
 
 // Button
-string currentButton = "";
-bool barEntered = false;
-const int buttonUp = 53;
-const int buttonDown = 51;
-const int buttonEnter = 49;
-const int buttonEmergency = A11; 
+int buttonState = 0;
+const int buttonOn = 51;
+const int buttonOff = 49;
 
 // Light
 const int light = 53;
@@ -152,8 +149,6 @@ void solar(){
     // Setting up the program.
     case Initial:
       digitalWrite(initialPhase, HIGH); //light corresponding LED
-      currentButton = "START";
-      highlight();
       solarTime = 0;
       nextPosition = 0;
       start = false;
@@ -164,56 +159,18 @@ void solar(){
     // Listening for inputs.
     case Wait:
       digitalWrite(waitPhase, HIGH);
-      
-      if(currentButton == "START") {
-        if(digitalRead(buttonDown) == HIGH) {
-          currentButton = "BAR";
-          highlight();
-        }
-        else if(digitalRead(buttonEnter) == HIGH) {
-          Y = 140;
-          tft.fillRect(timeBox, Y, BOXSIZE, tft.height() - Y, WHITE);
-          tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, PASTELGREEN);
-          solarTime = tft.height() - Y;
-          nextPosition = Y;
-          createInterface(solarTime);
-          start = true;
-          startButton();
-        }
+      buttonState = digitalRead(buttonOn);
+      if(buttonState == HIGH){
+        digitalWrite(light, HIGH);
+        Y = 140;
+        tft.fillRect(timeBox, Y, BOXSIZE, tft.height() - Y, WHITE);
+        tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, PASTELGREEN);
+        
+        solarTime = tft.height() - Y;
+        nextPosition = Y;
+        createInterface(solarTime);
+        start = true;
       }
-      else if(currentButton == "BAR") {
-        if(barEntered) {
-          if(digitalRead(buttonUp) == HIGH) {
-            tft.fillRect(timeBox, Y, BOXSIZE, tft.height() - Y, WHITE);
-            tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, PASTELGREEN);
-
-            ++solarTime;
-            --nextPosition;
-            createInterface(solarTime);
-          }
-          else if(digitalRead(buttonDown) == HIGH) {
-            tft.fillRect(timeBox, Y, BOXSIZE, tft.height() - Y, WHITE);
-            tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, PASTELGREEN);
-
-            ++solarTime;
-            --nextPosition;
-            createInterface(solarTime);
-          }
-          else { //digitalRead(buttonEnter) == HIGH
-            barEntered = false;
-          }
-        }
-        else { bar not entered
-          if(digitalRead(buttonEnter) == HIGH) {
-            barEntered = true;
-          }
-          else if(digitalRead(buttonUp) == HIGH) {
-            currentButton = "START";
-            highlight();
-          }
-        }
-      }
-      
       digitalWrite(device1, LOW);
       digitalWrite(device2, LOW);
       digitalWrite(device3, LOW);
@@ -244,14 +201,11 @@ void solar(){
       
     case Execute:
       digitalWrite(executePhase, HIGH);
-      
-      currentButton = "STOP";
-      highlight();
-      if(digitalRead(buttonEnter) == HIGH) {
+      buttonState = digitalRead(buttonOff);
+      if(buttonState == HIGH){
+        digitalWrite(light, LOW);
         start = false;
-        stopButton();
       }
-      
       digitalWrite(device1, HIGH);
       digitalWrite(device2, HIGH);
       digitalWrite(device3, HIGH);
@@ -278,14 +232,11 @@ void solar(){
       
     case Pause:
       digitalWrite(pausePhase, HIGH);
-      
-      currentButton = "START";
-      highlight();
-      if(digitalRead(buttonEnter) == HIGH) {
+      buttonState = digitalRead(buttonOn);
+      if(buttonState == HIGH){
+        digitalWrite(light, HIGH);
         start = true;
-        startButton();
       }
-      
       if(solarTime <= 0){
         phase = Initial;
         break;
@@ -388,10 +339,10 @@ void setup() {
   digitalWrite(sensor7fail, LOW);
   digitalWrite(sensor8fail, LOW);
   
-  pinMode(buttonUp, INPUT);
-  pinMode(buttonDown, INPUT);
-  pinMode(buttonEnter, INPUT);
-  pinMode(buttonEmergency, INPUT);
+  pinMode(buttonOn, INPUT);
+  pinMode(buttonOff, INPUT);
+  pinMode(light, OUTPUT);
+  digitalWrite(light, LOW);
 }
 
 void loop() {
@@ -506,27 +457,6 @@ void stopButton(){
   tft.setTextSize(3);
   tft.setTextColor(BLACK);
   tft.print("Stop");
-}
-
-void highlight() {
-  if(currentButton == "START") {
-    tft.drawRect(10, 160, 100, 30, BLACK);
-    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(WHITE);
-    tft.print("Start");
-  }
-  else if(currentButton == "STOP") {
-    tft.drawRect(10, 200, 100, 30, BLACK);
-    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(WHITE);
-    tft.print("Stop");
-  }
-  else { //currentButton == "BAR"
-    tft.fillRect(timeBox, Y, BOXSIZE, tft.height() - Y, BLACK);
-    //tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, PASTELGREEN);
-  }
 }
 
 // Function used to call once for creating interface.

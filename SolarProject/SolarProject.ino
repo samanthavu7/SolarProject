@@ -498,6 +498,31 @@ void readSensors(){
   h6 = solar6.readHumidity();
   h7 = solar7.readHumidity();
   h8 = solar8.readHumidity();
+  
+  if(t1 == NAN || h1 == NAN) {
+    digitalWrite(sensor1fail, HIGH);
+  }
+  if(t2 == NAN || h2 == NAN) {
+    digitalWrite(sensor1fail, HIGH);
+  }
+  if(t3 == NAN || h3 == NAN) {
+    digitalWrite(sensor1fail, HIGH);
+  }
+  if(t4 == NAN || h4 == NAN) {
+    digitalWrite(sensor1fail, HIGH);
+  }
+  if(t5 == NAN || h5 == NAN) {
+    digitalWrite(sensor1fail, HIGH);
+  }
+  if(t6 == NAN || h6 == NAN) {
+    digitalWrite(sensor1fail, HIGH);
+  }
+  if(t7 == NAN || h7 == NAN) {
+    digitalWrite(sensor1fail, HIGH);
+  }
+  if(t8 == NAN || h8 == NAN) {
+    digitalWrite(sensor1fail, HIGH);
+  }
 }
 
 float solarEfficiency(){

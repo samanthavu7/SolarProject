@@ -10,8 +10,8 @@
 #include <TouchScreen.h>
 #include <Adafruit_TFTLCD.h>
 #include <SPI.h>
-#include <SD.h>
-#include "DHT.h"
+#include <SD.h> //SD card for saving data
+#include "DHT.h" 
 
 #define YP A3  // Analog only
 #define XM A2  // Analog only
@@ -97,14 +97,9 @@ float t1, t2, t3, t4, t5, t6, t7, t8 = 0.0;
 float h1, h2, h3, h4, h5, h6, h7, h8 = 0.0;
 char degree = '*';
 
-// Device pins: Odd numbers
-int device1 = 23;
-int device2 = 25;
-int device3 = 27;
-int device4 = 29;
-int device5 = 31;
-int device6 = 33;
-int device7 = 35;
+// Pins for fan relays
+int relay1 = 23;
+int relay2 = 25;
 
 //Phase LED pins: set pinMode() in setup(). digitalWrite() to HIGH at the beginning of each phase
 int initialPhase = 37;
@@ -214,12 +209,9 @@ void solar(){
         }
       }
       
-      digitalWrite(device1, LOW);
-      digitalWrite(device2, LOW);
-      digitalWrite(device3, LOW);
-      digitalWrite(device4, LOW);
-      digitalWrite(device5, LOW);
-      digitalWrite(device6, LOW);
+      digitalWrite(relay1, LOW);
+      digitalWrite(relay2, LOW);
+
       if (Z > MINPRESSURE && Z < MAXPRESSURE) {
         if(X > timeBox && Y > 139){
           
@@ -252,12 +244,9 @@ void solar(){
         stopButton();
       }
       
-      digitalWrite(device1, HIGH);
-      digitalWrite(device2, HIGH);
-      digitalWrite(device3, HIGH);
-      digitalWrite(device4, HIGH);
-      digitalWrite(device5, HIGH);
-      digitalWrite(device6, HIGH);
+      digitalWrite(relay1, HIGH);
+      digitalWrite(relay2, HIGH);
+
       if (Z > MINPRESSURE && Z < MAXPRESSURE) {
         // Listening for stop.
         if(X > 0 && X < 100){
@@ -278,6 +267,8 @@ void solar(){
       
     case Pause:
       digitalWrite(pausePhase, HIGH);
+      digitalWrite(relay1, LOW);
+      digitalWrite(relay2, LOW);
       
       currentButton = "START";
       highlight();
@@ -346,29 +337,13 @@ void setup() {
   //pinMode(button, INPUT);
 
   // Setup devices
-  pinMode(device1, OUTPUT);
-  pinMode(device2, OUTPUT);
-  pinMode(device3, OUTPUT);
-  pinMode(device4, OUTPUT);
-  pinMode(device5, OUTPUT);
-  pinMode(device6, OUTPUT);
-
-  digitalWrite(device1, LOW);
-  digitalWrite(device2, LOW);
-  digitalWrite(device3, LOW);
-  digitalWrite(device4, LOW);
-  digitalWrite(device5, LOW);
-  digitalWrite(device6, LOW);
+  pinMode(relay1, OUTPUT);
+  pinMode(relay2, OUTPUT);
   
   pinMode(initialPhase, OUTPUT);
   pinMode(waitPhase, OUTPUT);
   pinMode(executePhase, OUTPUT);
   pinMode(pausePhase, OUTPUT);
-  
-  digitalWrite(initialPhase, LOW);
-  digitalWrite(waitPhase, LOW);
-  digitalWrite(executePhase, LOW);
-  digitalWrite(pausePhase, LOW);
   
   pinMode(sensor1fail, OUTPUT);
   pinMode(sensor2fail, OUTPUT);
@@ -378,15 +353,6 @@ void setup() {
   pinMode(sensor6fail, OUTPUT);
   pinMode(sensor7fail, OUTPUT);
   pinMode(sensor8fail, OUTPUT);
-  
-  digitalWrite(sensor1fail, LOW);
-  digitalWrite(sensor2fail, LOW);
-  digitalWrite(sensor3fail, LOW);
-  digitalWrite(sensor4fail, LOW);
-  digitalWrite(sensor5fail, LOW);
-  digitalWrite(sensor6fail, LOW);
-  digitalWrite(sensor7fail, LOW);
-  digitalWrite(sensor8fail, LOW);
   
   pinMode(buttonUp, INPUT);
   pinMode(buttonDown, INPUT);
@@ -601,54 +567,6 @@ float averageTemp(){
 float averageHumi(){
   return h1;
   //return (h1 + h2 + h3 + h4 + h5 + h6 + h7 + h8) / 8;
-}
-
-// Print function.
-void printData(){
-  Serial.println("\tS1\t\tS2\tS3\tS4\tS5\tS6\tS7\tS8\t");
-  Serial.print("T\t"); 
-  Serial.print(t1);
-  Serial.print(degree);
-  Serial.print("C\t\t");
-  Serial.print(t2);
-  Serial.print(degree);
-  Serial.print("C\t\t");
-  Serial.print(t3);
-  Serial.print(degree);
-  Serial.print("C\t\t");
-  Serial.print(t4);
-  Serial.print(degree);
-  Serial.print("C\t\t");
-  Serial.print(t5);
-  Serial.print(degree);
-  Serial.print("C\t\t");
-  Serial.print(t6);
-  Serial.print(degree);
-  Serial.print("C\t\t");
-  Serial.print(t7);
-  Serial.print(degree);
-  Serial.print("C\t\t");
-  Serial.print(t8);
-  Serial.print(degree);
-  Serial.println("C");
-  Serial.print("H\t");
-  Serial.print(h1);
-  Serial.print("%\t\t");
-  Serial.print(h2);
-  Serial.print("%\t\t");
-  Serial.print(h3);
-  Serial.print("%\t\t");
-  Serial.print(h4);
-  Serial.print("%\t\t");
-  Serial.print(h5);
-  Serial.print("%\t\t");
-  Serial.print(h6);
-  Serial.print("%\t\t");
-  Serial.print(h7);
-  Serial.print("%\t\t");
-  Serial.print(h8);
-  Serial.println("%\n");
-  Serial.println("\n");
 }
 
 // Write function.

@@ -149,15 +149,13 @@ void solar(){
           currentButton = "BAR";
           highlight();
         }
-        else if(digitalRead(buttonEnter) == HIGH) {
-          Y = 140;
-          tft.fillRect(timeBox, Y, BOXSIZE, tft.height() - Y, WHITE);
-          tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, PASTELGREEN);
-          solarTime = tft.height() - Y;
-          nextPosition = Y;
+        else if(digitalRead(buttonEnter) == HIGH) { //solarTime cannot be 0?
+          tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE); //time bar
+          tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime, PASTELGREEN); //dual green bar, Y+1??
+          
+          nextPosition = solarTime;
           createInterface(solarTime);
           start = true;
-          startButton();
         }
       }
       else if(currentButton == "BAR") {
@@ -165,7 +163,6 @@ void solar(){
           if(digitalRead(buttonUp) == HIGH) {
             tft.fillRect(timeBox, Y, BOXSIZE, tft.height() - Y, WHITE);
             tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, PASTELGREEN);
-
             ++solarTime;
             --nextPosition;
             createInterface(solarTime);
@@ -173,8 +170,7 @@ void solar(){
           else if(digitalRead(buttonDown) == HIGH) {
             tft.fillRect(timeBox, Y, BOXSIZE, tft.height() - Y, WHITE);
             tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, PASTELGREEN);
-
-            ++solarTime;
+            --solarTime;
             --nextPosition;
             createInterface(solarTime);
           }
@@ -182,7 +178,7 @@ void solar(){
             barEntered = false;
           }
         }
-        else { bar not entered
+        else { //bar not entered
           if(digitalRead(buttonEnter) == HIGH) {
             barEntered = true;
           }
@@ -196,25 +192,6 @@ void solar(){
       digitalWrite(relay1, LOW);
       digitalWrite(relay2, LOW);
 
-//       if (Z > MINPRESSURE && Z < MAXPRESSURE) {
-//         if(X > timeBox && Y > 139){
-          
-//           // Create process bar.
-//           tft.fillRect(timeBox, Y, BOXSIZE, tft.height() - Y, WHITE);
-//           tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, PASTELGREEN);
-          
-//           solarTime = tft.height() - Y;
-//           nextPosition = Y;
-          createInterface(solarTime);
-        }
-//         // Listening for start.
-//         if(X > 0 && X < 100){
-//           if(Y > 160 && Y < 190){
-//             start = true;
-//             startButton();
-//           }
-//         }
-//       }
       phase = start ? Execute : Wait;
       break;
       

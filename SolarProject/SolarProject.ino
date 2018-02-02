@@ -133,7 +133,6 @@ void solar(){
       
       solarTime = 0;
       nextPosition = 0;
-      start = false;
       
       initializeButtons(); //create start (highlighted) and stop buttons
       
@@ -153,7 +152,6 @@ void solar(){
         else if(digitalRead(buttonEnter) == HIGH) { //solarTime cannot be 0?
           tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE); //time bar
           tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime, PASTELGREEN); //dual green bar, Y+1??
-          
           nextPosition = solarTime;
           createInterface(solarTime);
           phase = Execute;
@@ -163,16 +161,16 @@ void solar(){
       else if(currentButton == "BAR") {
         if(barEntered) {
           if(digitalRead(buttonUp) == HIGH) {
-            tft.fillRect(timeBox, Y, BOXSIZE, tft.height() - Y, WHITE);
-            tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, PASTELGREEN);
             ++solarTime;
+            tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE);
+            tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime, PASTELGREEN);
             --nextPosition;
             createInterface(solarTime);
           }
           else if(digitalRead(buttonDown) == HIGH) {
-            tft.fillRect(timeBox, Y, BOXSIZE, tft.height() - Y, WHITE);
-            tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, PASTELGREEN);
             --solarTime;
+            tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE);
+            tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime, PASTELGREEN);
             --nextPosition;
             createInterface(solarTime);
           }

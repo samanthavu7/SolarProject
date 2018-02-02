@@ -110,7 +110,8 @@ Emergency button currently not implemented. */
 const int buttonUp = 53;
 const int buttonDown = 51;
 const int buttonEnter = 49;
-const int buttonEmergency = A11; 
+const int buttonEmergency = A11;
+const int ledEmergency = A12;
 
 //Variables for manual buttons.
 string currentButton = ""; // START -> STOP -> BAR 
@@ -341,6 +342,8 @@ void setup() {
   pinMode(buttonDown, INPUT);
   pinMode(buttonEnter, INPUT);
   pinMode(buttonEmergency, INPUT);
+  
+  pinMode(ledEmergency, OUTPUT);
 }
 
 void loop() {
@@ -382,6 +385,13 @@ void loop() {
         secBox = false;
       }
     }
+  }
+  // Emergency Button is pressed
+  if (digitalRead(buttonEmergency) == HIGH) {
+    digitalWrite(ledEmergency,HIGH);
+    // FIXME: add lock-down function
+  } else {
+    digitalWrite(ledEmeregency,LOW);
   }
   solar();
 }

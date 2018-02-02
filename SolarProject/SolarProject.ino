@@ -113,7 +113,7 @@ const int buttonEmergency = A11;
 const int ledEmergency = A12;
 
 //Variables for manual buttons.
-string currentButton = ""; // START -> STOP -> BAR 
+String currentButton = ""; // START -> STOP -> BAR 
 bool barEntered = false; // If drying time bar is selected
 
 // Time
@@ -290,7 +290,6 @@ void setup() {
   pinMode(buttonDown, INPUT);
   pinMode(buttonEnter, INPUT);
   pinMode(buttonEmergency, INPUT);
-  
   pinMode(ledEmergency, OUTPUT);
 }
 
@@ -339,7 +338,7 @@ void loop() {
     digitalWrite(ledEmergency,HIGH);
     // FIXME: add lock-down function
   } else {
-    digitalWrite(ledEmeregency,LOW);
+    digitalWrite(ledEmergency,LOW);
   }
   solar();
 }

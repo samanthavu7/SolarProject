@@ -40,12 +40,11 @@ Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 // Define file for SD card. **140 bytes per log session.
 File solarData;
 
+//Unknown screen stuff
 // Size of key containers 70px
 #define BOXSIZE 40
-
 // Padding
 double buttonPadding = 5;
-
 // Alignment
 double timeBox = tft.width() - BOXSIZE - 10;
 
@@ -280,7 +279,7 @@ void solar(){
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(9600); //?
   
   #if defined __AVR_ATmega2560__
   // Begin SD usage.
@@ -384,7 +383,6 @@ void loop() {
       }
     }
   }
-  touch();
   solar();
 }
 
@@ -447,7 +445,7 @@ void highlight() {
 }
 
 // Function used to call once for creating interface.
-void createInterface(int y){
+void createInterface(int y){ //purpose of y?
   // Refresh
   tft.fillRect(80, 10, 85, 55, PASTELGREEN);
   // Create data values: Time, Temperature, etc.

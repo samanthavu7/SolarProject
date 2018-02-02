@@ -51,7 +51,6 @@ double timeBox = tft.width() - BOXSIZE - 10;
 // Runtime varibles.
 int solarTime = 0; //drying time
 int nextPosition = 0;
-bool start = false;
 
 /* DHT sensors are the type of sensor used in the system to read the temperature and humidity of the air.
 Define the sensor type.*/
@@ -143,6 +142,8 @@ void solar(){
 
     case Wait: // Listening for inputs.
       digitalWrite(waitPhase, HIGH);
+      digitalWrite(relay1, LOW); //Neccessary?
+      digitalWrite(relay2, LOW);
       
       if(currentButton == "START") {
         if(digitalRead(buttonDown) == HIGH) {
@@ -155,7 +156,8 @@ void solar(){
           
           nextPosition = solarTime;
           createInterface(solarTime);
-          start = true;
+          phase = Execute;
+          break;
         }
       }
       else if(currentButton == "BAR") {
@@ -188,41 +190,21 @@ void solar(){
           }
         }
       }
-      
-      digitalWrite(relay1, LOW);
-      digitalWrite(relay2, LOW);
-
-      phase = start ? Execute : Wait;
+    
       break;
       
     case Execute:
       digitalWrite(executePhase, HIGH);
+      digitalWrite(relay1, HIGH);
+      digitalWrite(relay2, HIGH);
       
       currentButton = "STOP";
       highlight();
       if(digitalRead(buttonEnter) == HIGH) {
-        start = false;
-        stopButton();
-      }
-      
-      digitalWrite(relay1, HIGH);
-      digitalWrite(relay2, HIGH);
-
-      if (Z > MINPRESSURE && Z < MAXPRESSURE) {
-        // Listening for stop.
-        if(X > 0 && X < 100){
-          if(Y > 200 && Y < 230){
-            start = false;
-            stopButton();
-          }
-        }
-      }
-
-      if(!start){
         phase = Pause;
         break;
       }
-      // Refresh time.
+      
       phase = (solarTime > 0) ? Execute : Pause;
       break;
       
@@ -234,24 +216,15 @@ void solar(){
       currentButton = "START";
       highlight();
       if(digitalRead(buttonEnter) == HIGH) {
-        start = true;
-        startButton();
+        phase = Execute;
+        break;
       }
       
-      if(solarTime <= 0){
+      if(solarTime <= 0){ //less than?
         phase = Initial;
         break;
       }
-      if (Z > MINPRESSURE && Z < MAXPRESSURE) {
-        // Listening for start.
-        if(X > 0 && X < 100){
-          if(Y > 160 && Y < 190){
-            start = true;
-            startButton();
-          }
-        }
-      }
-      phase = start ? Execute : Pause;
+    
       break;
   }
 }

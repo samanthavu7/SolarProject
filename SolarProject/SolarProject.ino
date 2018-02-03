@@ -371,7 +371,7 @@ void highlight() {
     tft.setTextSize(3);
     tft.setTextColor(WHITE);
     tft.print("Stop");
-    tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, PASTELGREEN);
+    tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE);
   }
   else if(currentButton == "STOP") {
     tft.drawRect(10, 160, 100, 30, WHITE);
@@ -384,7 +384,7 @@ void highlight() {
     tft.setTextSize(3);
     tft.setTextColor(BLACK);
     tft.print("Stop");
-    tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, PASTELGREEN);
+    tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE);
   }
   else { //currentButton == "BAR"
     tft.drawRect(10, 160, 100, 30, WHITE);
@@ -397,7 +397,7 @@ void highlight() {
     tft.setTextSize(3);
     tft.setTextColor(WHITE);
     tft.print("Stop");
-    tft.fillRect(timeBox, 0, BOXSIZE, Y + 1, BLACK);
+    tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, BLACK);
   }
 }
 

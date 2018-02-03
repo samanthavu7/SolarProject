@@ -133,7 +133,7 @@ void solar(){
       
       solarTime = 0;
       nextPosition = 0;
-      
+      currentButton = "START";
       initializeButtons(); //create start (highlighted) and stop buttons
       
       phase = Wait;

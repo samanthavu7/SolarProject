@@ -107,8 +107,8 @@ int sensor8fail = 48;
 /* Pins for manual buttons.
 Emergency button currently not implemented. */
 const int buttonUp = 53;
-const int buttonDown = 51;
-const int buttonEnter = 49;
+const int buttonEnter = 51;
+const int buttonDown = 49;
 const int buttonEmergency = A11;
 const int ledEmergency = A12;
 

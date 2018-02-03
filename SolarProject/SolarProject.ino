@@ -28,6 +28,7 @@ Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 #define PASTELGREEN 0x6F92
 #define BLACK 0x0000
 #define WHITE 0xFFFF
+#define GRAY 0xC618 //http://www.barth-dev.de/online/rgb565-color-picker/
 
 // Define SPI bus for SD usage (begin funct.) ** 
 #if defined __AVR_ATmega2560__
@@ -145,22 +146,25 @@ void solar(){
       digitalWrite(relay2, LOW);
       
       if(currentButton == "START") {
-        if(solarTime == 0) { solarTime = 180; }
         if(digitalRead(buttonDown) == HIGH) {
           currentButton = "BAR";
           highlight();
         }
         else if(digitalRead(buttonEnter) == HIGH) { //solarTime cannot be 0?
-          tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE); //time bar
-          tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime, PASTELGREEN); //dual green bar, Y+1??
-          nextPosition = solarTime;
-          createInterface(solarTime);
-          phase = Execute;
-          break;
+          if(solarTime != 0) {
+            tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE); //time bar fillRect(x,y,width,length,color), (0,0) coordinate is in the upper left hand corner of the screen
+            tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime, PASTELGREEN); //dual green bar, Y+1??
+            nextPosition = solarTime;
+            createInterface(solarTime);
+            phase = Execute;
+            break;
+          }
         }
       }
       else if(currentButton == "BAR") {
-        if(barEntered) {
+        Serial.println("BAR");
+        if(barEntered) {;
+          select();
           if(digitalRead(buttonUp) == HIGH) {
             ++solarTime;
             tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE);
@@ -180,6 +184,7 @@ void solar(){
           }
         }
         else { //bar not entered
+          unselect();
           if(digitalRead(buttonEnter) == HIGH) {
             barEntered = true;
           }
@@ -196,7 +201,8 @@ void solar(){
       digitalWrite(executePhase, HIGH);
       digitalWrite(relay1, HIGH);
       digitalWrite(relay2, HIGH);
-      
+
+      select(); //START
       currentButton = "STOP";
       highlight();
       if(digitalRead(buttonEnter) == HIGH) {
@@ -211,7 +217,8 @@ void solar(){
       digitalWrite(pausePhase, HIGH);
       digitalWrite(relay1, LOW);
       digitalWrite(relay2, LOW);
-      
+
+      select();
       currentButton = "START";
       highlight();
       if(digitalRead(buttonEnter) == HIGH) {
@@ -322,6 +329,8 @@ void loop() {
     }
     index++;
   }
+  
+  // Box in the upper right-hand corner of the screen blinks every second while the dryer is running
   if(phase == Execute){
     if(cM % 1000 == 0){
       if(!secBox){
@@ -346,10 +355,10 @@ void loop() {
 
 void initializeButtons(){ 
   // Create start button.
-  tft.drawRect(10, 160, 100, 30, BLACK);
+  tft.drawRect(10, 160, 100, 30, GRAY);
   tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
   tft.setTextSize(3);
-  tft.setTextColor(BLACK);
+  tft.setTextColor(GRAY);
   tft.print("Start");
   
   // Create stop button.
@@ -358,21 +367,24 @@ void initializeButtons(){
   tft.setTextSize(3);
   tft.setTextColor(WHITE);
   tft.print("Stop");
+
+  // Create initial time bar.
+  tft.fillRect(timeBox, tft.height()-10, BOXSIZE, 10, WHITE); //hardcoding ok?
 }
 
 void highlight() {
   if(currentButton == "START") {
-    tft.drawRect(10, 160, 100, 30, BLACK);
+    tft.drawRect(10, 160, 100, 30, GRAY);
     tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
     tft.setTextSize(3);
-    tft.setTextColor(BLACK);
+    tft.setTextColor(GRAY);
     tft.print("Start");
     tft.drawRect(10, 200, 100, 30, WHITE);
     tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
     tft.setTextSize(3);
     tft.setTextColor(WHITE);
     tft.print("Stop");
-    tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE);
+    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
   }
   else if(currentButton == "STOP") {
     tft.drawRect(10, 160, 100, 30, WHITE);
@@ -380,12 +392,12 @@ void highlight() {
     tft.setTextSize(3);
     tft.setTextColor(WHITE);
     tft.print("Start");
-    tft.drawRect(10, 200, 100, 30, BLACK);
+    tft.drawRect(10, 200, 100, 30, GRAY);
     tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
     tft.setTextSize(3);
-    tft.setTextColor(BLACK);
+    tft.setTextColor(GRAY);
     tft.print("Stop");
-    tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE);
+    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
   }
   else { //currentButton == "BAR"
     tft.drawRect(10, 160, 100, 30, WHITE);
@@ -398,7 +410,91 @@ void highlight() {
     tft.setTextSize(3);
     tft.setTextColor(WHITE);
     tft.print("Stop");
-    tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, BLACK);
+    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, GRAY);
+  }
+}
+
+void select() {
+  if(currentButton == "START") {
+    tft.drawRect(10, 160, 100, 30, BLACK);
+    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
+    tft.setTextSize(3);
+    tft.setTextColor(BLACK);
+    tft.print("Start");
+    tft.drawRect(10, 200, 100, 30, WHITE);
+    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
+    tft.setTextSize(3);
+    tft.setTextColor(WHITE);
+    tft.print("Stop");
+    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
+  }
+  else if(currentButton == "STOP") {
+    tft.drawRect(10, 160, 100, 30, WHITE);
+    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
+    tft.setTextSize(3);
+    tft.setTextColor(WHITE);
+    tft.print("Start");
+    tft.drawRect(10, 200, 100, 30, BLACK);
+    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
+    tft.setTextSize(3);
+    tft.setTextColor(BLACK);
+    tft.print("Stop");
+    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
+  }
+  else { //currentButton == "BAR"
+    tft.drawRect(10, 160, 100, 30, WHITE);
+    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
+    tft.setTextSize(3);
+    tft.setTextColor(WHITE);
+    tft.print("Start");
+    tft.drawRect(10, 200, 100, 30, WHITE);
+    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
+    tft.setTextSize(3);
+    tft.setTextColor(WHITE);
+    tft.print("Stop");
+    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, BLACK);
+  }
+}
+
+void unselect() {
+  if(currentButton == "START") {
+    tft.drawRect(10, 160, 100, 30, BLACK);
+    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
+    tft.setTextSize(3);
+    tft.setTextColor(BLACK);
+    tft.print("Start");
+    tft.drawRect(10, 200, 100, 30, WHITE);
+    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
+    tft.setTextSize(3);
+    tft.setTextColor(WHITE);
+    tft.print("Stop");
+    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
+  }
+  else if(currentButton == "STOP") {
+    tft.drawRect(10, 160, 100, 30, WHITE);
+    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
+    tft.setTextSize(3);
+    tft.setTextColor(WHITE);
+    tft.print("Start");
+    tft.drawRect(10, 200, 100, 30, BLACK);
+    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
+    tft.setTextSize(3);
+    tft.setTextColor(BLACK);
+    tft.print("Stop");
+    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
+  }
+  else { //currentButton == "BAR"
+    tft.drawRect(10, 160, 100, 30, WHITE);
+    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
+    tft.setTextSize(3);
+    tft.setTextColor(WHITE);
+    tft.print("Start");
+    tft.drawRect(10, 200, 100, 30, WHITE);
+    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
+    tft.setTextSize(3);
+    tft.setTextColor(WHITE);
+    tft.print("Stop");
+    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, BLACK);
   }
 }
 
@@ -526,8 +622,9 @@ void writeData(){
 
 void markers(){
   // Markers
-  tft.fillRect(tft.width() - 70, 140, 10, 2, WHITE);
-  tft.fillRect(tft.width() - 70, 200, 10, 2, WHITE);
-  tft.fillRect(tft.width() - 70, 260, 10, 2, WHITE);
+  tft.fillRect(tft.width() - 70, 130, 10, 2, WHITE);
+  tft.fillRect(tft.width() - 70, 190, 10, 2, WHITE);
+  tft.fillRect(tft.width() - 70, 250, 10, 2, WHITE);
+  tft.fillRect(tft.width() - 70, 310, 10, 2, WHITE);
 }
 

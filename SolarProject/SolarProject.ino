@@ -145,19 +145,18 @@ void solar(){
       digitalWrite(relay2, LOW);
       
       if(currentButton == "START") {
+        if(solarTime == 0) { solarTime = 180; }
         if(digitalRead(buttonDown) == HIGH) {
           currentButton = "BAR";
           highlight();
         }
         else if(digitalRead(buttonEnter) == HIGH) { //solarTime cannot be 0?
-          if(solarTime != 0) { 
-            tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE); //time bar
-            tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime, PASTELGREEN); //dual green bar, Y+1??
-            nextPosition = solarTime;
-            createInterface(solarTime);
-            phase = Execute;
-            break;
-          }
+          tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE); //time bar
+          tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime, PASTELGREEN); //dual green bar, Y+1??
+          nextPosition = solarTime;
+          createInterface(solarTime);
+          phase = Execute;
+          break;
         }
       }
       else if(currentButton == "BAR") {

@@ -113,8 +113,9 @@ const int buttonDown = 49;
 const int buttonEmergency = A11;
 const int ledEmergency = A12;
 
-//Variables for manual buttons.
-String currentButton = ""; // START -> STOP -> BAR 
+//Variables for manual buttons. 
+String currentButton = "";
+String selectedButton = "";
 bool barEntered = false; // If drying time bar is selected
 
 // Time
@@ -133,10 +134,12 @@ void solar(){
       digitalWrite(initialPhase, HIGH);
       
       solarTime = 0;
-      nextPosition = 0;
+      nextPosition = tft.height()-10; //Check
+      initializeButtons(); //create start, stop buttons, time bar
       currentButton = "START";
-      initializeButtons(); //create start (highlighted) and stop buttons
-      
+      selectedButton = "";
+      highlight();     
+     
       phase = Wait;
       break;
 
@@ -152,41 +155,42 @@ void solar(){
         }
         else if(digitalRead(buttonEnter) == HIGH) { //solarTime cannot be 0?
           if(solarTime != 0) {
-            tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE); //time bar fillRect(x,y,width,length,color), (0,0) coordinate is in the upper left hand corner of the screen
-            tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime, PASTELGREEN); //dual green bar, Y+1??
-            nextPosition = solarTime;
+            selectedButton = "START";
+            highlight();
             createInterface(solarTime);
+
             phase = Execute;
             break;
           }
         }
       }
       else if(currentButton == "BAR") {
-        Serial.println("BAR");
-        if(barEntered) {;
-          select();
-          if(digitalRead(buttonUp) == HIGH) {
+        if(barEntered) {
+          if(digitalRead(buttonUp) == HIGH && solarTime < 180) {
             ++solarTime;
-            tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE);
-            tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime, PASTELGREEN);
             --nextPosition;
+            tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, BLACK); //time bar fillRect(x,y,width,length,color), (0,0) coordinate is in the upper left hand corner of the screen
+            tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime-10, PASTELGREEN);
             createInterface(solarTime);
           }
-          else if(digitalRead(buttonDown) == HIGH) {
+          else if(digitalRead(buttonDown) == HIGH && solarTime > 0) {
             --solarTime;
-            tft.fillRect(timeBox, tft.height()-solarTime, BOXSIZE, solarTime, WHITE);
-            tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime, PASTELGREEN);
-            --nextPosition;
+            tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, BLACK);
+            tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime-10, PASTELGREEN);
+            ++nextPosition;
             createInterface(solarTime);
           }
-          else { //digitalRead(buttonEnter) == HIGH
+          else if(digitalRead(buttonEnter) == HIGH) { 
             barEntered = false;
+            selectedButton = "";
+            highlight();
           }
         }
         else { //bar not entered
-          unselect();
           if(digitalRead(buttonEnter) == HIGH) {
             barEntered = true;
+            selectedButton = "BAR";
+            highlight();
           }
           else if(digitalRead(buttonUp) == HIGH) {
             currentButton = "START";
@@ -201,11 +205,14 @@ void solar(){
       digitalWrite(executePhase, HIGH);
       digitalWrite(relay1, HIGH);
       digitalWrite(relay2, HIGH);
-
-      select(); //START
-      currentButton = "STOP";
+      
+      currentButton = "STOP"; 
       highlight();
+      
       if(digitalRead(buttonEnter) == HIGH) {
+        selectedButton = "STOP";
+        highlight();
+        
         phase = Pause;
         break;
       }
@@ -218,16 +225,19 @@ void solar(){
       digitalWrite(relay1, LOW);
       digitalWrite(relay2, LOW);
 
-      select();
-      currentButton = "START";
-      highlight();
-      if(digitalRead(buttonEnter) == HIGH) {
-        phase = Execute;
+      if(solarTime <= 0){ //less than?
+        phase = Initial;
         break;
       }
       
-      if(solarTime <= 0){ //less than?
-        phase = Initial;
+      currentButton = "START";
+      highlight();
+
+      if(digitalRead(buttonEnter) == HIGH) {
+        selectedButton = "START";
+        highlight();
+        
+        phase = Execute;
         break;
       }
     
@@ -236,7 +246,7 @@ void solar(){
 }
 
 void setup() {
-  Serial.begin(9600); //?
+  Serial.begin(9600); //? Will need to have user open serial every time :-(
   
   #if defined __AVR_ATmega2560__
   // Begin SD usage.
@@ -308,8 +318,8 @@ void loop() {
     // Update interface every minute.
     if(index % 1 == 0){
       if(phase == Execute){
-        nextPosition++;
-        solarTime--;
+        ++nextPosition;
+        --solarTime;
         createInterface(nextPosition);
         tft.fillRect(timeBox, nextPosition, BOXSIZE, 1, PASTELGREEN);
       }
@@ -332,7 +342,7 @@ void loop() {
   
   // Box in the upper right-hand corner of the screen blinks every second while the dryer is running
   if(phase == Execute){
-    if(cM % 1000 == 0){
+    if(cM % 1000 == 0){ 
       if(!secBox){
         tft.drawRect(200, 10, 15, 15, WHITE);
         secBox = true;
@@ -343,22 +353,22 @@ void loop() {
       }
     }
   }
-  // Emergency Button is pressed
+  // Emergency Button is pressed-- HIGH turns off LED and vice versa bc...?
   if (digitalRead(buttonEmergency) == HIGH) {
-    digitalWrite(ledEmergency,HIGH);
+    digitalWrite(ledEmergency,LOW);
     // FIXME: add lock-down function
   } else {
-    digitalWrite(ledEmergency,LOW);
+    digitalWrite(ledEmergency,HIGH);
   }
   solar();
 }
 
-void initializeButtons(){ 
+void initializeButtons(){ //also functions as deselect
   // Create start button.
-  tft.drawRect(10, 160, 100, 30, GRAY);
+  tft.drawRect(10, 160, 100, 30, WHITE);
   tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
   tft.setTextSize(3);
-  tft.setTextColor(GRAY);
+  tft.setTextColor(WHITE);
   tft.print("Start");
   
   // Create stop button.
@@ -372,8 +382,8 @@ void initializeButtons(){
   tft.fillRect(timeBox, tft.height()-10, BOXSIZE, 10, WHITE); //hardcoding ok?
 }
 
-void highlight() {
-  if(currentButton == "START") {
+void highlight() { 
+  if(currentButton == "START" && selectedButton == "") {
     tft.drawRect(10, 160, 100, 30, GRAY);
     tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
     tft.setTextSize(3);
@@ -386,20 +396,7 @@ void highlight() {
     tft.print("Stop");
     tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
   }
-  else if(currentButton == "STOP") {
-    tft.drawRect(10, 160, 100, 30, WHITE);
-    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(WHITE);
-    tft.print("Start");
-    tft.drawRect(10, 200, 100, 30, GRAY);
-    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(GRAY);
-    tft.print("Stop");
-    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
-  }
-  else { //currentButton == "BAR"
+  else if(currentButton == "BAR" && selectedButton == "") {
     tft.drawRect(10, 160, 100, 30, WHITE);
     tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
     tft.setTextSize(3);
@@ -412,10 +409,7 @@ void highlight() {
     tft.print("Stop");
     tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, GRAY);
   }
-}
-
-void select() {
-  if(currentButton == "START") {
+  else if(currentButton == "START" && selectedButton == "START") {
     tft.drawRect(10, 160, 100, 30, BLACK);
     tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
     tft.setTextSize(3);
@@ -428,62 +422,20 @@ void select() {
     tft.print("Stop");
     tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
   }
-  else if(currentButton == "STOP") {
-    tft.drawRect(10, 160, 100, 30, WHITE);
-    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(WHITE);
-    tft.print("Start");
-    tft.drawRect(10, 200, 100, 30, BLACK);
-    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(BLACK);
-    tft.print("Stop");
-    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
-  }
-  else { //currentButton == "BAR"
-    tft.drawRect(10, 160, 100, 30, WHITE);
-    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(WHITE);
-    tft.print("Start");
-    tft.drawRect(10, 200, 100, 30, WHITE);
-    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(WHITE);
-    tft.print("Stop");
-    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, BLACK);
-  }
-}
-
-void unselect() {
-  if(currentButton == "START") {
+  else if(currentButton == "STOP" && selectedButton == "START") {
     tft.drawRect(10, 160, 100, 30, BLACK);
     tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
     tft.setTextSize(3);
     tft.setTextColor(BLACK);
     tft.print("Start");
-    tft.drawRect(10, 200, 100, 30, WHITE);
+    tft.drawRect(10, 200, 100, 30, GRAY);
     tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
     tft.setTextSize(3);
-    tft.setTextColor(WHITE);
+    tft.setTextColor(GRAY);
     tft.print("Stop");
     tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
   }
-  else if(currentButton == "STOP") {
-    tft.drawRect(10, 160, 100, 30, WHITE);
-    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(WHITE);
-    tft.print("Start");
-    tft.drawRect(10, 200, 100, 30, BLACK);
-    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(BLACK);
-    tft.print("Stop");
-    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
-  }
-  else { //currentButton == "BAR"
+  else if(currentButton == "BAR" && selectedButton == "BAR") {
     tft.drawRect(10, 160, 100, 30, WHITE);
     tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
     tft.setTextSize(3);
@@ -495,13 +447,26 @@ void unselect() {
     tft.setTextColor(WHITE);
     tft.print("Stop");
     tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, BLACK);
+  }
+  else if(currentButton == "START" && selectedButton == "STOP") {
+    tft.drawRect(10, 160, 100, 30, GRAY);
+    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
+    tft.setTextSize(3);
+    tft.setTextColor(GRAY);
+    tft.print("Start");
+    tft.drawRect(10, 200, 100, 30, BLACK);
+    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
+    tft.setTextSize(3);
+    tft.setTextColor(BLACK);
+    tft.print("Stop");
+    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
   }
 }
 
 // Function used to call once for creating interface.
 void createInterface(int y){ //purpose of y?
   // Refresh
-  tft.fillRect(80, 10, 85, 55, PASTELGREEN);
+  tft.fillRect(80, 10, 85, 55, PASTELGREEN); //what is this?
   // Create data values: Time, Temperature, etc.
   tft.setTextSize(2);
   tft.setTextColor(WHITE);

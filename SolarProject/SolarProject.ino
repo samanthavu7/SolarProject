@@ -87,24 +87,6 @@ Currently, fan speed is controlled by a manual knob. */
 int relay1 = 23;
 int relay2 = 25;
 
-/* Pins for phase LEDs. The corresponding LED will turn on for the current phase. 
-For operator control. */
-int initialPhase = 37;
-int waitPhase = 38;
-int executePhase = 39;
-int pausePhase = 40;
-
-/* Pins for sensor failure LEDs. The corresponding LED will turn on if a sensor is not correctly reading data.
-For operator control. */
-int sensor1fail = 41;
-int sensor2fail = 42;
-int sensor3fail = 43;
-int sensor4fail = 44;
-int sensor5fail = 45;
-int sensor6fail = 46;
-int sensor7fail = 47;
-int sensor8fail = 48;
-
 /* Pins for manual buttons.
 Emergency button currently not implemented. */
 const int buttonUp = 53;
@@ -289,21 +271,7 @@ void setup() {
   // Setup devices
   pinMode(relay1, OUTPUT);
   pinMode(relay2, OUTPUT);
-  
-  pinMode(initialPhase, OUTPUT);
-  pinMode(waitPhase, OUTPUT);
-  pinMode(executePhase, OUTPUT);
-  pinMode(pausePhase, OUTPUT);
-  
-  pinMode(sensor1fail, OUTPUT);
-  pinMode(sensor2fail, OUTPUT);
-  pinMode(sensor3fail, OUTPUT);
-  pinMode(sensor4fail, OUTPUT);
-  pinMode(sensor5fail, OUTPUT);
-  pinMode(sensor6fail, OUTPUT);
-  pinMode(sensor7fail, OUTPUT);
-  pinMode(sensor8fail, OUTPUT);
-  
+   
   pinMode(buttonUp, INPUT);
   pinMode(buttonDown, INPUT);
   pinMode(buttonEnter, INPUT);

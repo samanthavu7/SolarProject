@@ -113,8 +113,6 @@ void solar(){
   switch(phase)
   {
     case Initial: // Setting up the program.
-      digitalWrite(initialPhase, HIGH);
-      
       solarTime = 0;
       nextPosition = tft.height()-10; //Check
       initializeButtons(); //create start, stop buttons, time bar
@@ -126,9 +124,8 @@ void solar(){
       break;
 
     case Wait: // Listening for inputs.
-      digitalWrite(waitPhase, HIGH);
-      digitalWrite(relay1, LOW); //Neccessary?
-      digitalWrite(relay2, LOW);
+//       digitalWrite(relay1, LOW); //Neccessary?
+//       digitalWrite(relay2, LOW);
       
       if(currentButton == "START") {
         if(digitalRead(buttonDown) == HIGH) {
@@ -184,7 +181,6 @@ void solar(){
       break;
       
     case Execute:
-      digitalWrite(executePhase, HIGH);
       digitalWrite(relay1, HIGH);
       digitalWrite(relay2, HIGH);
       
@@ -203,7 +199,6 @@ void solar(){
       break;
       
     case Pause:
-      digitalWrite(pausePhase, HIGH);
       digitalWrite(relay1, LOW);
       digitalWrite(relay2, LOW);
 

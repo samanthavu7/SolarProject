@@ -281,10 +281,10 @@ void loop() {
     // Update interface every minute.
     if(index % 1 == 0){
       if(phase == Execute){
+        tft.fillRect(timeBox, nextPosition, BOXSIZE, 1, PASTELGREEN);
         ++nextPosition;
         --solarTime;
         createInterface(nextPosition);
-        tft.fillRect(timeBox, nextPosition, BOXSIZE, 1, PASTELGREEN);
       }
     }
     // Log data every 2 minutes.
@@ -555,4 +555,3 @@ void markers(){
   tft.fillRect(tft.width() - 70, 250, 10, 2, WHITE);
   tft.fillRect(tft.width() - 70, 310, 10, 2, WHITE);
 }
-

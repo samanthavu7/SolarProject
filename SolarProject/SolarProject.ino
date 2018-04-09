@@ -443,6 +443,8 @@ void emergencyScreen() {
   tft.print("Motion sensors have detected someone inside of the dryer.");
   tft.setCursor(10, 170);
   tft.print("Close the door and press Start to resume drying.");
+  //tft.fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color)
+  //tft.print("!"); //set size and cursor
 }
   
 // Function used to call once for creating interface.

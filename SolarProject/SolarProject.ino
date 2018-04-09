@@ -28,6 +28,7 @@ Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 #define PASTELGREEN 0x6F92
 #define BLACK 0x0000
 #define WHITE 0xFFFF
+#define RED 0xFF0000
 #define GRAY 0xC618 //http://www.barth-dev.de/online/rgb565-color-picker/
 
 // Define SPI bus for SD usage (begin funct.) ** 
@@ -320,6 +321,8 @@ void loop() {
   if (digitalRead(buttonEmergency) == HIGH) {
     digitalWrite(ledEmergency,LOW);
     // FIXME: add lock-down function
+    emergencyScreen();
+    phase = Pause;
   } else {
     digitalWrite(ledEmergency,HIGH);
   }
@@ -426,6 +429,22 @@ void highlight() {
   }
 }
 
+//Draws Emergency Screen
+void emergencyScreen() {
+  tft.fillScreen(RED);
+  tft.setTextSize(5);
+  tft.setTextColor(WHITE);
+  tft.setCursor(10, 10);
+  tft.print("EMERGENCY");
+  tft.setCursor(10, 60);
+  tft.print("STOP");
+  tft.setTextSize(2);
+  tft.setCursor(10, 150);
+  tft.print("Motion sensors have detected someone inside of the dryer.");
+  tft.setCursor(10, 170);
+  tft.print("Close the door and press Start to resume drying.");
+}
+  
 // Function used to call once for creating interface.
 void createInterface(int y){ //purpose of y?
   // Refresh

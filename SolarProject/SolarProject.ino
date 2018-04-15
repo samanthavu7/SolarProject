@@ -95,6 +95,10 @@ const int buttonEnter = 51;
 const int buttonDown = 49;
 const int buttonEmergency = A11;
 const int ledEmergency = A12;
+int upState = LOW;
+int downState = LOW;
+long lastDebounceTime = 0;
+long debounceDelay = 1000;
 
 //Variables for manual buttons. 
 String currentButton = "";
@@ -146,25 +150,74 @@ void solar(){
       }
       else if(currentButton == "BAR") {
         if(barEntered) {
-          if(digitalRead(buttonUp) == HIGH && solarTime < 180) {
-            ++solarTime;
-            --nextPosition;
-            tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, BLACK); //time bar fillRect(x,y,width,length,color), (0,0) coordinate is in the upper left hand corner of the screen
-            tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime-10, PASTELGREEN);
-            createInterface(solarTime);
-          }
-          else if(digitalRead(buttonDown) == HIGH && solarTime > 0) {
-            --solarTime;
-            tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, BLACK);
-            tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime-10, PASTELGREEN);
-            ++nextPosition;
-            createInterface(solarTime);
-          }
-          else if(digitalRead(buttonEnter) == HIGH) { 
+          //get button states first
+          upState = digitalRead(buttonUp);
+          downState = digitalRead(buttonDown);
+          //if entered, exit the bar
+          if(digitalRead(buttonEnter) == HIGH) { 
             barEntered = false;
             selectedButton = "";
             highlight();
           }
+          //debouncing - anything pressed with interval of 1 sec is taken as single press
+          else if ( (millis() - lastDebounceTime) > debounceDelay) {
+            if (upState == HIGH) {
+              ++solarTime;
+              --nextPosition;
+              tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, BLACK); //time bar fillRect(x,y,width,length,color), (0,0) coordinate is in the upper left hand corner of the screen
+              tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime-10, PASTELGREEN);
+              createInterface(solarTime);
+              lastDebounceTime = millis(); //set the current time
+            }
+            if (downState == HIGH) {
+              --solarTime;
+              tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, BLACK);
+              tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime-10, PASTELGREEN);
+              ++nextPosition;
+              createInterface(solarTime);
+              lastDebounceTime = millis(); //set the current time
+            }
+          }
+          //press and hold case: increase continuosly until let go
+          else {
+            if (upState == HIGH) {
+              while (digitalRead(buttonUp) == HIGH) {
+                  ++solarTime;
+                  --nextPosition;
+                  tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, BLACK); //time bar fillRect(x,y,width,length,color), (0,0) coordinate is in the upper left hand corner of the screen
+                  tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime-10, PASTELGREEN);
+                  createInterface(solarTime);
+              }
+            }
+            else if (downState == HIGH){
+              while (digitalRead(buttonDown) == HIGH) {
+                  --solarTime;
+                  tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, BLACK);
+                  tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime-10, PASTELGREEN);
+                  ++nextPosition;
+                  createInterface(solarTime);
+              }
+            }
+           }
+//           if(digitalRead(buttonUp) == HIGH && solarTime < 180) {
+//             ++solarTime;
+//             --nextPosition;
+//             tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, BLACK); //time bar fillRect(x,y,width,length,color), (0,0) coordinate is in the upper left hand corner of the screen
+//             tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime-10, PASTELGREEN);
+//             createInterface(solarTime);
+//           }
+//           else if(digitalRead(buttonDown) == HIGH && solarTime > 0) {
+//             --solarTime;
+//             tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, BLACK);
+//             tft.fillRect(timeBox, 0, BOXSIZE, tft.height()-solarTime-10, PASTELGREEN);
+//             ++nextPosition;
+//             createInterface(solarTime);
+//           }
+//           else if(digitalRead(buttonEnter) == HIGH) { 
+//             barEntered = false;
+//             selectedButton = "";
+//             highlight();
+//           }
         }
         else { //bar not entered
           if(digitalRead(buttonEnter) == HIGH) {

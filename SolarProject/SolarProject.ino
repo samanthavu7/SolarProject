@@ -95,6 +95,7 @@ const int buttonEnter = 51;
 const int buttonDown = 49;
 const int buttonEmergency = A11;
 const int ledEmergency = A12;
+const int buzzerEmergency = 12;
 int upState = LOW;
 int downState = LOW;
 long lastDebounceTime = 0;
@@ -113,7 +114,7 @@ bool secBox = false;
 const long interval = 60000;
 
 // State Machine.
-enum Solar{Initial, Wait, Execute, Pause}phase;
+enum Solar{Initial, Wait, Execute, Pause, Emergency}phase;
 void solar(){
   switch(phase)
   {
@@ -271,7 +272,11 @@ void solar(){
         phase = Execute;
         break;
       }
-    
+    case Emergency:
+        emergencyScreen();
+        soundAlarm();
+      //TODO: add state transitions
+        break;
       break;
   }
 }
@@ -498,6 +503,18 @@ void emergencyScreen() {
   tft.print("Close the door and press Start to resume drying.");
   //tft.fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color)
   //tft.print("!"); //set size and cursor
+}
+
+void soundAlarm() { //TODO: change alarm jingle
+  int numTones = 10;
+  int tones[] = {261, 277, 294, 311, 330, 349, 370, 392, 415, 440};
+  //            mid C  C#   D    D#   E    F    F#   G    G#   A
+  for (int i = 0; i < numTones; i++)
+  {
+    tone(speakerPin, tones[i]);
+    delay(500);
+  }
+  noTone(speakerPin);
 }
   
 // Function used to call once for creating interface.

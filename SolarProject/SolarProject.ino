@@ -379,8 +379,7 @@ void loop() {
   if (digitalRead(buttonEmergency) == HIGH) {
     digitalWrite(ledEmergency,LOW);
     // FIXME: add lock-down function
-    emergencyScreen();
-    phase = Pause;
+    phase = Emergency;
   } else {
     digitalWrite(ledEmergency,HIGH);
   }

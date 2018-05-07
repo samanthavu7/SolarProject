@@ -79,8 +79,8 @@ DHT solar7(DHT7, DHTTYPE);
 DHT solar8(DHT8, DHTTYPE);
 
 // Define variables for DHT temperature and humidity data...
-float t1, t2, t3, t4, t5, t6, t7, t8 = 0.0;
-float h1, h2, h3, h4, h5, h6, h7, h8 = 0.0;
+float temp[7]; //don't hardcode
+float hum[7];
 char degree = '*';
 
 /* Pins for fan relays. Relays control the correct amount of voltage to turn the fans on.
@@ -537,24 +537,24 @@ void createInterface(int y){ //purpose of y?
 // Read function: temperature and humidity.
 void readSensors(){
   // Temperature.
-  t1 = solar1.readTemperature();
-  t2 = solar2.readTemperature();
-  t3 = solar3.readTemperature();
-  t4 = solar4.readTemperature();
-  t5 = solar5.readTemperature();
-  t6 = solar6.readTemperature();
-  t7 = solar7.readTemperature();
-  t8 = solar8.readTemperature();
+  temp[0] = solar1.readTemperature();
+  temp[1] = solar2.readTemperature();
+  temp[2] = solar3.readTemperature();
+  temp[3] = solar4.readTemperature();
+  temp[4] = solar5.readTemperature();
+  temp[5] = solar6.readTemperature();
+  temp[6] = solar7.readTemperature();
+  temp[7] = solar8.readTemperature();
 
   // Humidity.
-  h1 = solar1.readHumidity();
-  h2 = solar2.readHumidity();
-  h3 = solar3.readHumidity();
-  h4 = solar4.readHumidity();
-  h5 = solar5.readHumidity();
-  h6 = solar6.readHumidity();
-  h7 = solar7.readHumidity();
-  h8 = solar8.readHumidity();
+  hum[0] = solar1.readHumidity();
+  hum[1] = solar2.readHumidity();
+  hum[2] = solar3.readHumidity();
+  hum[3] = solar4.readHumidity();
+  hum[4] = solar5.readHumidity();
+  hum[5] = solar6.readHumidity();
+  hum[6] = solar7.readHumidity();
+  hum[7] = solar8.readHumidity();
 }
 
 float solarEfficiency(){
@@ -581,59 +581,73 @@ float solarEfficiency(){
 }
 
 float averageTemp(){
-  return t1;
-  //return (t1 + t2 + t3 + t4 + t5 + t6 + t7 + t8) / 8;
+  float temp_sum = 0.0;
+  int temp_count = 0; //fine-tune
+  for(int i = 0; i < 8; ++i) {
+    if(temp[i] != Nan) {
+      temp_sum += temp[i]; //indicate if a sensor isn't working??
+      temp_count++;
+    }
+  }
+  return temp_sum / temp_count;  
 }
 
 float averageHumi(){
-  return h1;
-  //return (h1 + h2 + h3 + h4 + h5 + h6 + h7 + h8) / 8;
+  float hum_sum = 0.0;
+  int hum_count = 0;
+  for(int i = 0; i < 8; ++i) {
+    if(hum[i] != Nan) {
+      hum_sum += hum[i]; //indicate if a sensor isn't working??
+      hum_count++;
+    }
+  }
+  return hum_sum / hum_count;
 }
 
 // Write function.
 void writeData(){
   solarData.println("\tS1\tS2\tS3\tS4\tS5\tS6\tS7\tS8\t");
   solarData.print("T\t"); 
-  solarData.print(t1);
+  solarData.print(temp[0]);
   solarData.print(degree);
   solarData.print("C\t");
-  solarData.print(t2);
+  solarData.print(temp[1]);
   solarData.print(degree);
   solarData.print("C\t");
-  solarData.print(t3);
+  solarData.print(temp[2]);
   solarData.print(degree);
   solarData.print("C\t");
-  solarData.print(t4);
+  solarData.print(temp[3]);
   solarData.print(degree);
   solarData.print("C\t");
-  solarData.print(t5);
+  solarData.print(temp[4]);
   solarData.print(degree);
   solarData.print("C\t");
-  solarData.print(t6);
+  solarData.print(temp[5]);
   solarData.print(degree);
   solarData.print("C\t");
-  solarData.print(t7);
+  solarData.print(temp[6]);
   solarData.print(degree);
   solarData.print("C\t");
-  solarData.print(t8);
+  solarData.print(temp[7]);
   solarData.print(degree);
   solarData.println("C");
   solarData.print("H\t");
-  solarData.print(h1);
+  solarData.print(hum[0]);
   solarData.print("%\t");
-  solarData.print(h2);
+  solarData.print(hum[1]);
   solarData.print("%\t");
-  solarData.print(h3);
+  solarData.print(hum[2]);
   solarData.print("%\t");
-  solarData.print(h4);
+  solarData.print(hum[3]);
   solarData.print("%\t");
-  solarData.print(h5);
+  solarData.print(hum[4]);
   solarData.print("%\t");
-  solarData.print(h6);
+  solarData.print(hum[5]);
   solarData.print("%\t");
-  solarData.print(h7);
+  solarData.print(hum[6]);
   solarData.print("%\t");
-  solarData.print(h8);
+  solarData.print(hum[7]);
   solarData.println("%\n");
   solarData.println("\n");
 }

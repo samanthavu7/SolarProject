@@ -15,6 +15,18 @@
 #include <SD.h> // SD card for saving data
 #include "DHT.h" // DHT sensor header file
 
+// Date and time functions using a DS1307 RTC connected via I2C and Wire lib
+#include <Wire.h>
+#include "RTClib.h"
+
+#if defined(ARDUINO_ARCH_SAMD)
+// for Zero, output on USB Serial console, remove line below if using programming port to program the Zero!
+   #define Serial SerialUSB
+#endif
+
+RTC_DS1307 rtc;
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
 // Define screen's SPI Communication**
 #define LCD_CS A3
 #define LCD_CD A2
@@ -281,9 +293,27 @@ void solar(){
   }
 }
 
-void setup() {
+void setup() {#ifndef ESP8266
+  #ifndef ESP8266
+    while (!Serial); // for Leonardo/Micro/Zero
+  #endif
+              
   Serial.begin(9600); //? Will need to have user open serial every time :-(
   
+  if (! rtc.begin()) {
+    Serial.println("Couldn't find RTC");
+    while (1);
+  }
+
+  if (! rtc.isrunning()) {
+    Serial.println("RTC is NOT running!");
+    // following line sets the RTC to the date & time this sketch was compiled
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    // This line sets the RTC with an explicit date & time, for example to set
+    // January 21, 2014 at 3am you would call:
+    // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
+  }         
+              
   #if defined __AVR_ATmega2560__
   // Begin SD usage.
   if(!SD.begin(SD_CS, SD_MOSI, SD_MISO, SD_SCK)){
@@ -383,7 +413,7 @@ void loop() {
   } else {
     digitalWrite(ledEmergency,HIGH);
   }
-  solar();
+  solar();  
 }
 
 void initializeButtons(){ //also functions as deselect
@@ -592,6 +622,21 @@ float averageHumi(){
 
 // Write function.
 void writeData(){
+  solarData.print(now.year(), DEC);
+    solarData.print('/');
+    solarData.print(now.month(), DEC);
+    solarData.print('/');
+    solarData.print(now.day(), DEC);
+    solarData.print(" (");
+    solarData.print(daysOfTheWeek[now.dayOfTheWeek()]);
+    solarData.print(") ");
+    solarData.print(now.hour(), DEC);
+    solarData.print(':');
+    solarData.print(now.minute(), DEC);
+    solarData.print(':');
+    solarData.print(now.second(), DEC);
+    solarData.println();
+  
   solarData.println("\tS1\tS2\tS3\tS4\tS5\tS6\tS7\tS8\t");
   solarData.print("T\t"); 
   solarData.print(t1);

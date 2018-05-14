@@ -85,8 +85,8 @@ char degree = '*';
 
 /* Pins for fan relays. Relays control the correct amount of voltage to turn the fans on.
 Currently, fan speed is controlled by a manual knob. */
-int relay1 = 23;
-int relay2 = 25;
+int relay1 = 31;
+int relay2 = 33;
 
 /* Pins for manual buttons.
 Emergency button currently not implemented. */

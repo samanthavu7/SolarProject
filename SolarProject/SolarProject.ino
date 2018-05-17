@@ -273,9 +273,12 @@ void solar(){
         break;
       }
     case Emergency:
-        emergencyScreen();
+        //emergencyScreen();
         soundAlarm();
-      //TODO: add state transitions
+        if(digitalRead(buttonEnter) == HIGH) {
+          //turn off alarm
+          phase = Pause;
+        }
         break;
       break;
   }
@@ -379,6 +382,7 @@ void loop() {
   if (digitalRead(buttonEmergency) == HIGH) {
     digitalWrite(ledEmergency,LOW);
     // FIXME: add lock-down function
+    emergencyScreen();
     phase = Emergency;
   } else {
     digitalWrite(ledEmergency,HIGH);

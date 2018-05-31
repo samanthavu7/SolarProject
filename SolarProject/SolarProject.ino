@@ -108,10 +108,12 @@ bool barEntered = false; // If drying time bar is selected
 
 // Time
 unsigned long pM = 0;
+unsigned long pS = 0;
 unsigned long index = 0;
 bool secBox = false;
 // Change here for time debug: 60000
-const long interval = 60000;
+const long intervalM = 60000;
+const long intervalS = 1000;
 
 // State Machine.
 enum Solar{Initial, Wait, Execute, Pause, Emergency}phase;
@@ -119,7 +121,7 @@ void solar(){
   switch(phase)
   {
     case Initial: // Setting up the program.
-      solarTime = 0;
+      solarTime = 10;
       nextPosition = tft.height()-10; //Check
       initializeButtons(); //create start, stop buttons, time bar
       currentButton = "START";
@@ -277,6 +279,8 @@ void solar(){
         soundAlarm();
         if(digitalRead(buttonEnter) == HIGH) {
           //turn off alarm
+          tft.fillScreen(PASTELGREEN);
+          createInterface(solarTime);
           phase = Pause;
         }
         break;
@@ -338,7 +342,7 @@ void setup() {
 
 void loop() {
   unsigned long cM = millis();
-  if (cM - pM >= interval) {
+  if (cM - pM >= intervalM) {
     pM = cM;
     // Update interface every minute.
     if(index % 1 == 0){
@@ -367,7 +371,8 @@ void loop() {
   
   // Box in the upper right-hand corner of the screen blinks every second while the dryer is running
   if(phase == Execute){
-    if(cM % 1000 == 0){ 
+    if(cM - pS >= intervalS){ 
+      pS = cM;
       if(!secBox){
         tft.drawRect(200, 10, 15, 15, WHITE);
         secBox = true;
@@ -377,15 +382,15 @@ void loop() {
         secBox = false;
       }
     }
-  }
-  // Emergency Button is pressed-- HIGH turns off LED and vice versa bc...?
-  if (digitalRead(buttonEmergency) == HIGH) {
-    digitalWrite(ledEmergency,LOW);
-    // FIXME: add lock-down function
-    emergencyScreen();
-    phase = Emergency;
-  } else {
-    digitalWrite(ledEmergency,HIGH);
+    // Emergency Button is pressed-- HIGH turns off LED and vice versa bc...?
+    if (digitalRead(buttonEmergency) == HIGH) {
+      digitalWrite(ledEmergency,LOW);
+      // FIXME: add lock-down function
+      emergencyScreen();
+      phase = Emergency;
+    } else {
+      digitalWrite(ledEmergency,HIGH);
+    }
   }
   solar();
 }
@@ -509,15 +514,15 @@ void emergencyScreen() {
 }
 
 void soundAlarm() { //TODO: change alarm jingle
-  int numTones = 10;
-  int tones[] = {261, 277, 294, 311, 330, 349, 370, 392, 415, 440};
-  //            mid C  C#   D    D#   E    F    F#   G    G#   A
-  for (int i = 0; i < numTones; i++)
-  {
-    tone(speakerPin, tones[i]);
-    delay(500);
-  }
-  noTone(speakerPin);
+//  int numTones = 10;
+//  int tones[] = {261, 277, 294, 311, 330, 349, 370, 392, 415, 440};
+//  //            mid C  C#   D    D#   E    F    F#   G    G#   A
+//  for (int i = 0; i < numTones; i++)
+//  {
+//    tone(speakerPin, tones[i]);
+//    delay(500);
+//  }
+//  noTone(speakerPin);
 }
   
 // Function used to call once for creating interface.

@@ -6,7 +6,7 @@
  * Several modications has been made to meet the objective of this research.
  * Credits can be found in header files or online by searching Adafruit tutorials. 
  */
-
+//checking
 #include <Adafruit_GFX.h> // User Interface LCD screen
 #include <Adafruit_TFTLCD.h>
 //where is SPI.h coming from? already included by SD.h

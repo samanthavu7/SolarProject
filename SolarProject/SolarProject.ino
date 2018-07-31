@@ -6,31 +6,12 @@
  * Several modications has been made to meet the objective of this research.
  * Credits can be found in header files or online by searching Adafruit tutorials. 
  */
-//checking
-#include <Adafruit_GFX.h> // User Interface LCD screen
-#include <Adafruit_TFTLCD.h>
-//where is SPI.h coming from? already included by SD.h
-// #include <SPI.h> /*Serial Peripheral Interface is a synchronous serial data protocol used by microcontrollers for communicating with 
-//                   one ore more peripheral devices quickly over short distances. */
+#include "SolarProject.h"
+#include "buttons.h"
+#include "screen.h"
+#include "sensors.h"
+#include "speedcontrol.h" //speedcontrol for fans
 #include <SD.h> // SD card for saving data
-#include "DHT.h" // DHT sensor header file
-#include "speedcontrol.h"
-
-// Define screen's SPI Communication**
-#define LCD_CS A3
-#define LCD_CD A2
-#define LCD_WR A1
-#define LCD_RD A0
-// Reset pin: optional
-#define LCD_RESET A4
-Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
-
-// Define colors of the screen
-#define PASTELGREEN 0x6F92
-#define BLACK 0x0000
-#define WHITE 0xFFFF
-#define RED 0xFF0000
-#define GRAY 0xC618 //http://www.barth-dev.de/online/rgb565-color-picker/
 
 // Define SPI bus for SD usage (begin funct.) ** 
 #if defined __AVR_ATmega2560__
@@ -43,81 +24,57 @@ Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 // Define file for SD card. **140 bytes per log session.
 File solarData;
 
-//Unknown screen stuff
-// Size of key containers 70px
-#define BOXSIZE 40
-// Padding
-double buttonPadding = 5;
-// Alignment
-double timeBox = tft.width() - BOXSIZE - 10;
-
-// Runtime varibles.
-int solarTime = 0; //drying time
-int nextPosition = 0;
-
-/* DHT sensors are the type of sensor used in the system to read the temperature and humidity of the air.
-Define the sensor type.*/
-#define DHTTYPE DHT22
-
-/* There are total of 8 DHT sensors in the V'Garden system and 4 in the R'Garden system.
-Create new class objects in respect to their pin numbers. */
-#define DHT1 22
-#define DHT2 24
-#define DHT3 26 //Why define vs. an int variable?
-#define DHT4 28
-#define DHT5 30
-#define DHT6 32
-#define DHT7 34
-#define DHT8 36
-
-DHT solar1(DHT1, DHTTYPE);
-DHT solar2(DHT2, DHTTYPE);
-DHT solar3(DHT3, DHTTYPE);
-DHT solar4(DHT4, DHTTYPE);
-DHT solar5(DHT5, DHTTYPE);
-DHT solar6(DHT6, DHTTYPE);
-DHT solar7(DHT7, DHTTYPE);
-DHT solar8(DHT8, DHTTYPE);
-
-// Define variables for DHT temperature and humidity data...
-float t1, t2, t3, t4, t5, t6, t7, t8 = 0.0;
-float h1, h2, h3, h4, h5, h6, h7, h8 = 0.0;
-char degree = '*';
-
-/* Pins for fan relays. Relays control the correct amount of voltage to turn the fans on.
-Currently, fan speed is controlled by a manual knob. */
-int relay1 = 31;
-int relay2 = 33;
-
-/* Pins for manual buttons.
-Emergency button currently not implemented. */
-const int buttonUp = 53;
-const int buttonEnter = 51;
-const int buttonDown = 49;
-//const int buttonEmergency = A11;
-//const int ledEmergency = A12;
-//const int buzzerEmergency = 12;
-int upState = LOW;
-int downState = LOW;
-long lastDebounceTime = 0;
-long debounceDelay = 1000;
-
-//Variables for manual buttons. 
-String currentButton = "";
-String selectedButton = "";
-bool barEntered = false; // If drying time bar is selected
-
-// Time
-unsigned long pM = 0;
-unsigned long pS = 0;
-unsigned long index = 0;
-bool secBox = false;
-// Change here for time debug: 60000
-const long intervalM = 60000;
-const long intervalS = 1000;
+// Write function.
+void writeData(){
+  solarData.println("\tS1\tS2\tS3\tS4\tS5\tS6\tS7\tS8\t");
+  solarData.print("T\t"); 
+  solarData.print(t1);
+  solarData.print(degree);
+  solarData.print("C\t");
+  solarData.print(t2);
+  solarData.print(degree);
+  solarData.print("C\t");
+  solarData.print(t3);
+  solarData.print(degree);
+  solarData.print("C\t");
+  solarData.print(t4);
+  solarData.print(degree);
+  solarData.print("C\t");
+  solarData.print(t5);
+  solarData.print(degree);
+  solarData.print("C\t");
+  solarData.print(t6);
+  solarData.print(degree);
+  solarData.print("C\t");
+  solarData.print(t7);
+  solarData.print(degree);
+  solarData.print("C\t");
+  solarData.print(t8);
+  solarData.print(degree);
+  solarData.println("C");
+  solarData.print("H\t");
+  solarData.print(h1);
+  solarData.print("%\t");
+  solarData.print(h2);
+  solarData.print("%\t");
+  solarData.print(h3);
+  solarData.print("%\t");
+  solarData.print(h4);
+  solarData.print("%\t");
+  solarData.print(h5);
+  solarData.print("%\t");
+  solarData.print(h6);
+  solarData.print("%\t");
+  solarData.print(h7);
+  solarData.print("%\t");
+  solarData.print(h8);
+  solarData.println("%\n");
+  solarData.println("\n");
+}
 
 // State Machine.
 enum Solar{Initial, Wait, Execute, Pause, /*Emergency*/}phase;
+
 void solar(){
   switch(phase)
   {
@@ -396,262 +353,3 @@ void loop() {
   solar();
 }
 
-void initializeButtons(){ //also functions as deselect
-  // Create start button.
-  tft.drawRect(10, 160, 100, 30, WHITE);
-  tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
-  tft.setTextSize(3);
-  tft.setTextColor(WHITE);
-  tft.print("Start");
-  
-  // Create stop button.
-  tft.drawRect(10, 200, 100, 30, WHITE);
-  tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
-  tft.setTextSize(3);
-  tft.setTextColor(WHITE);
-  tft.print("Stop");
-
-  // Create initial time bar.
-  tft.fillRect(timeBox, tft.height()-10, BOXSIZE, 10, WHITE); //hardcoding ok?
-}
-
-void highlight() { 
-  if(currentButton == "START" && selectedButton == "") {
-    tft.drawRect(10, 160, 100, 30, GRAY);
-    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(GRAY);
-    tft.print("Start");
-    tft.drawRect(10, 200, 100, 30, WHITE);
-    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(WHITE);
-    tft.print("Stop");
-    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
-  }
-  else if(currentButton == "BAR" && selectedButton == "") {
-    tft.drawRect(10, 160, 100, 30, WHITE);
-    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(WHITE);
-    tft.print("Start");
-    tft.drawRect(10, 200, 100, 30, WHITE);
-    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(WHITE);
-    tft.print("Stop");
-    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, GRAY);
-  }
-  else if(currentButton == "START" && selectedButton == "START") {
-    tft.drawRect(10, 160, 100, 30, BLACK);
-    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(BLACK);
-    tft.print("Start");
-    tft.drawRect(10, 200, 100, 30, WHITE);
-    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(WHITE);
-    tft.print("Stop");
-    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
-  }
-  else if(currentButton == "STOP" && selectedButton == "START") {
-    tft.drawRect(10, 160, 100, 30, BLACK);
-    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(BLACK);
-    tft.print("Start");
-    tft.drawRect(10, 200, 100, 30, GRAY);
-    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(GRAY);
-    tft.print("Stop");
-    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
-  }
-  else if(currentButton == "BAR" && selectedButton == "BAR") {
-    tft.drawRect(10, 160, 100, 30, WHITE);
-    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(WHITE);
-    tft.print("Start");
-    tft.drawRect(10, 200, 100, 30, WHITE);
-    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(WHITE);
-    tft.print("Stop");
-    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, BLACK);
-  }
-  else if(currentButton == "START" && selectedButton == "STOP") {
-    tft.drawRect(10, 160, 100, 30, GRAY);
-    tft.setCursor(10 + buttonPadding, 160 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(GRAY);
-    tft.print("Start");
-    tft.drawRect(10, 200, 100, 30, BLACK);
-    tft.setCursor(10 + buttonPadding, 200 + buttonPadding);
-    tft.setTextSize(3);
-    tft.setTextColor(BLACK);
-    tft.print("Stop");
-    tft.fillRect(timeBox, tft.height()-solarTime-10, BOXSIZE, solarTime+10, WHITE);
-  }
-}
-
-//Draws Emergency Screen
-/*void emergencyScreen() {
-  tft.fillScreen(RED);
-  tft.setTextSize(5);
-  tft.setTextColor(WHITE);
-  tft.setCursor(10, 10);
-  tft.print("EMERGENCY");
-  tft.setCursor(10, 60);
-  tft.print("STOP");
-  tft.setTextSize(2);
-  tft.setCursor(10, 150);
-  tft.print("Motion sensors have detected someone inside of the dryer.");
-  tft.setCursor(10, 170);
-  tft.print("Close the door and press Start to resume drying.");
-  //tft.fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color)
-  //tft.print("!"); //set size and cursor
-}*/
-
-void soundAlarm() { //TODO: change alarm jingle
-//  int numTones = 10;
-//  int tones[] = {261, 277, 294, 311, 330, 349, 370, 392, 415, 440};
-//  //            mid C  C#   D    D#   E    F    F#   G    G#   A
-//  for (int i = 0; i < numTones; i++)
-//  {
-//    tone(speakerPin, tones[i]);
-//    delay(500);
-//  }
-//  noTone(speakerPin);
-}
-  
-// Function used to call once for creating interface.
-void createInterface(int y){ //purpose of y?
-  // Refresh
-  tft.fillRect(80, 10, 85, 55, PASTELGREEN); //what is this?
-  // Create data values: Time, Temperature, etc.
-  tft.setTextSize(2);
-  tft.setTextColor(WHITE);
-  tft.setCursor(10, 10);
-  tft.print("Time: "); tft.print(solarTime); tft.println(" min");
-  tft.setCursor(10, 30);
-  tft.print("Temp: "); tft.print(averageTemp()); tft.print(" "); tft.print((char)247); tft.println("C");
-  tft.setCursor(10, 50);
-  tft.print("Humi: "); tft.print(averageHumi()); tft.println(" %");
-  tft.setCursor(10, 70);
-  tft.setTextSize(1);
-  tft.print(solarEfficiency()); tft.println(" % energy saved.");  
-}
-
-// Read function: temperature and humidity.
-void readSensors(){
-  // Temperature.
-  t1 = solar1.readTemperature();
-  t2 = solar2.readTemperature();
-  t3 = solar3.readTemperature();
-  t4 = solar4.readTemperature();
-  t5 = solar5.readTemperature();
-  t6 = solar6.readTemperature();
-  t7 = solar7.readTemperature();
-  t8 = solar8.readTemperature();
-
-  // Humidity.
-  h1 = solar1.readHumidity();
-  h2 = solar2.readHumidity();
-  h3 = solar3.readHumidity();
-  h4 = solar4.readHumidity();
-  h5 = solar5.readHumidity();
-  h6 = solar6.readHumidity();
-  h7 = solar7.readHumidity();
-  h8 = solar8.readHumidity();
-}
-
-float solarEfficiency(){
-  // Standard dryer uses about 3k~ Watts, assume 1 hour usage
-  const float standard = 3000;
-
-  // Practical value contains energy spent on controller, sensors, fans, magnetics (add more here); the sum of device powers.
-  // Practical = E(D_i)
-  // P = IV
-  // Controller
-  // P = 12 * 0.05 = 0.6 Watts
-  // Sensor
-  // P = 6 * 0.0015 = 0.009 Watts
-  // Fan 6"
-  // P = 37 Watts
-  // Fan 10"
-  // P = 200 Watts
-  // Practical = 0.6 + (8 * 0.009) + 37 + 200 = 237.672
-  
-  float practical = 237.672 * 3;
-  
-  float energySaved = 100 - ((practical / standard) * 100);
-  return energySaved;
-}
-
-float averageTemp(){
-  return t1;
-  //return (t1 + t2 + t3 + t4 + t5 + t6 + t7 + t8) / 8;
-}
-
-float averageHumi(){
-  return h1;
-  //return (h1 + h2 + h3 + h4 + h5 + h6 + h7 + h8) / 8;
-}
-
-// Write function.
-void writeData(){
-  solarData.println("\tS1\tS2\tS3\tS4\tS5\tS6\tS7\tS8\t");
-  solarData.print("T\t"); 
-  solarData.print(t1);
-  solarData.print(degree);
-  solarData.print("C\t");
-  solarData.print(t2);
-  solarData.print(degree);
-  solarData.print("C\t");
-  solarData.print(t3);
-  solarData.print(degree);
-  solarData.print("C\t");
-  solarData.print(t4);
-  solarData.print(degree);
-  solarData.print("C\t");
-  solarData.print(t5);
-  solarData.print(degree);
-  solarData.print("C\t");
-  solarData.print(t6);
-  solarData.print(degree);
-  solarData.print("C\t");
-  solarData.print(t7);
-  solarData.print(degree);
-  solarData.print("C\t");
-  solarData.print(t8);
-  solarData.print(degree);
-  solarData.println("C");
-  solarData.print("H\t");
-  solarData.print(h1);
-  solarData.print("%\t");
-  solarData.print(h2);
-  solarData.print("%\t");
-  solarData.print(h3);
-  solarData.print("%\t");
-  solarData.print(h4);
-  solarData.print("%\t");
-  solarData.print(h5);
-  solarData.print("%\t");
-  solarData.print(h6);
-  solarData.print("%\t");
-  solarData.print(h7);
-  solarData.print("%\t");
-  solarData.print(h8);
-  solarData.println("%\n");
-  solarData.println("\n");
-}
-
-void markers(){
-  // Markers
-  tft.fillRect(tft.width() - 70, 130, 10, 2, WHITE);
-  tft.fillRect(tft.width() - 70, 190, 10, 2, WHITE);
-  tft.fillRect(tft.width() - 70, 250, 10, 2, WHITE);
-  tft.fillRect(tft.width() - 70, 310, 10, 2, WHITE);
-}

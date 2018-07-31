@@ -14,6 +14,7 @@
 //                   one ore more peripheral devices quickly over short distances. */
 #include <SD.h> // SD card for saving data
 #include "DHT.h" // DHT sensor header file
+#include "speedcontrol.h"
 
 // Define screen's SPI Communication**
 #define LCD_CS A3
@@ -93,9 +94,9 @@ Emergency button currently not implemented. */
 const int buttonUp = 53;
 const int buttonEnter = 51;
 const int buttonDown = 49;
-const int buttonEmergency = A11;
-const int ledEmergency = A12;
-const int buzzerEmergency = 12;
+//const int buttonEmergency = A11;
+//const int ledEmergency = A12;
+//const int buzzerEmergency = 12;
 int upState = LOW;
 int downState = LOW;
 long lastDebounceTime = 0;
@@ -116,7 +117,7 @@ const long intervalM = 60000;
 const long intervalS = 1000;
 
 // State Machine.
-enum Solar{Initial, Wait, Execute, Pause, Emergency}phase;
+enum Solar{Initial, Wait, Execute, Pause, /*Emergency*/}phase;
 void solar(){
   switch(phase)
   {
@@ -274,7 +275,7 @@ void solar(){
         phase = Execute;
         break;
       }
-    case Emergency:
+    /*case Emergency:
         //emergencyScreen();
         soundAlarm();
         if(digitalRead(buttonEnter) == HIGH) {
@@ -283,7 +284,7 @@ void solar(){
           createInterface(solarTime);
           phase = Pause;
         }
-        break;
+        break;*/
       break;
   }
 }
@@ -336,8 +337,8 @@ void setup() {
   pinMode(buttonUp, INPUT);
   pinMode(buttonDown, INPUT);
   pinMode(buttonEnter, INPUT);
-  pinMode(buttonEmergency, INPUT);
-  pinMode(ledEmergency, OUTPUT);
+  //pinMode(buttonEmergency, INPUT);
+  //pinMode(ledEmergency, OUTPUT);
 }
 
 void loop() {
@@ -383,14 +384,14 @@ void loop() {
       }
     }
     // Emergency Button is pressed-- HIGH turns off LED and vice versa bc...?
-    if (digitalRead(buttonEmergency) == HIGH) {
+    /*if (digitalRead(buttonEmergency) == HIGH) {
       digitalWrite(ledEmergency,LOW);
       // FIXME: add lock-down function
       emergencyScreen();
       phase = Emergency;
     } else {
       digitalWrite(ledEmergency,HIGH);
-    }
+    }*/
   }
   solar();
 }
@@ -496,7 +497,7 @@ void highlight() {
 }
 
 //Draws Emergency Screen
-void emergencyScreen() {
+/*void emergencyScreen() {
   tft.fillScreen(RED);
   tft.setTextSize(5);
   tft.setTextColor(WHITE);
@@ -511,7 +512,7 @@ void emergencyScreen() {
   tft.print("Close the door and press Start to resume drying.");
   //tft.fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color)
   //tft.print("!"); //set size and cursor
-}
+}*/
 
 void soundAlarm() { //TODO: change alarm jingle
 //  int numTones = 10;

@@ -6,21 +6,21 @@
 #include "screen.h"
 /* Pins for manual buttons.
 Emergency button currently not implemented. */
-const int buttonUp = 53;
-const int buttonEnter = 51;
-const int buttonDown = 49;
+extern const int buttonUp;
+extern const int buttonEnter;
+extern const int buttonDown;
 //const int buttonEmergency = A11;
 //const int ledEmergency = A12;
 //const int buzzerEmergency = 12;
-int upState = LOW;
-int downState = LOW;
-long lastDebounceTime = 0;
-long debounceDelay = 1000;
+extern int upState;
+extern int downState;
+extern long lastDebounceTime;
+extern long debounceDelay;
 
 //Variables for manual buttons. 
-String currentButton = "";
-String selectedButton = "";
-bool barEntered = false; // If drying time bar is selected
+extern String currentButton;
+extern String selectedButton;
+extern bool barEntered; // If drying time bar is selected
 
 void initializeButtons();
 void highlight();  

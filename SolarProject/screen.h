@@ -12,7 +12,7 @@
 #define LCD_RD A0
 // Reset pin: optional
 #define LCD_RESET A4
-Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
+extern Adafruit_TFTLCD tft;
 
 // Define colors of the screen
 #define PASTELGREEN 0x6F92
@@ -25,9 +25,9 @@ Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 // Size of key containers 70px
 #define BOXSIZE 40
 // Padding
-double buttonPadding = 5;
+extern double buttonPadding;
 // Alignment
-double timeBox = tft.width() - BOXSIZE - 10;
+extern double timeBox;
 
 void createInterface(int y);
 void markers();

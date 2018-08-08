@@ -1,5 +1,13 @@
 #include "screen.h"
 
+Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
+
+
+// Padding
+double buttonPadding = 5;
+// Alignment
+double timeBox = tft.width() - BOXSIZE - 10;
+
 // Function used to call once for creating interface.
 void createInterface(int y){ //purpose of y?
   // Refresh

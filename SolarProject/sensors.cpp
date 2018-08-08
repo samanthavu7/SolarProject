@@ -1,5 +1,19 @@
 #include "sensors.h"
 
+// Define variables for DHT temperature and humidity data...
+float t1, t2, t3, t4, t5, t6, t7, t8 = 0.0;
+float h1, h2, h3, h4, h5, h6, h7, h8 = 0.0;
+char degree = '*';
+
+DHT solar1(DHT1, DHTTYPE);
+DHT solar2(DHT2, DHTTYPE);
+DHT solar3(DHT3, DHTTYPE);
+DHT solar4(DHT4, DHTTYPE);
+DHT solar5(DHT5, DHTTYPE);
+DHT solar6(DHT6, DHTTYPE);
+DHT solar7(DHT7, DHTTYPE);
+DHT solar8(DHT8, DHTTYPE);
+
 // Read function: temperature and humidity.
 void readSensors(){
   // Temperature.

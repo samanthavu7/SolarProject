@@ -17,19 +17,28 @@ Create new class objects in respect to their pin numbers. */
 #define DHT7 34
 #define DHT8 36
 
-DHT solar1(DHT1, DHTTYPE);
-DHT solar2(DHT2, DHTTYPE);
-DHT solar3(DHT3, DHTTYPE);
-DHT solar4(DHT4, DHTTYPE);
-DHT solar5(DHT5, DHTTYPE);
-DHT solar6(DHT6, DHTTYPE);
-DHT solar7(DHT7, DHTTYPE);
-DHT solar8(DHT8, DHTTYPE);
+extern DHT solar1;
+extern DHT solar2;
+extern DHT solar3;
+extern DHT solar4;
+extern DHT solar5;
+extern DHT solar6;
+extern DHT solar7;
+extern DHT solar8;
+//DHT solar1(DHT1, DHTTYPE);
+//DHT solar2(DHT2, DHTTYPE);
+//DHT solar3(DHT3, DHTTYPE);
+//DHT solar4(DHT4, DHTTYPE);
+//DHT solar5(DHT5, DHTTYPE);
+//DHT solar6(DHT6, DHTTYPE);
+//DHT solar7(DHT7, DHTTYPE);
+//DHT solar8(DHT8, DHTTYPE);
+
 
 // Define variables for DHT temperature and humidity data...
-float t1, t2, t3, t4, t5, t6, t7, t8 = 0.0;
-float h1, h2, h3, h4, h5, h6, h7, h8 = 0.0;
-char degree = '*';
+extern float t1, t2, t3, t4, t5, t6, t7, t8;
+extern float h1, h2, h3, h4, h5, h6, h7, h8;
+extern char degree;
 
 void readSensors();
 float solarEfficiency();

@@ -4,21 +4,21 @@
 //main header file
 
 // Runtime varibles.
-int solarTime = 0; //drying time
-int nextPosition = 0;
+extern int solarTime; //drying time
+extern int nextPosition;
 
 /* Pins for fan relays. Relays control the correct amount of voltage to turn the fans on.
 Currently, fan speed is controlled by a manual knob. */
-int relay1 = 31;
-int relay2 = 33;
+extern int relay1;
+extern int relay2;
 
 // Time
-unsigned long pM = 0;
-unsigned long pS = 0;
-unsigned long index = 0;
-bool secBox = false;
+extern unsigned long pM;
+extern unsigned long pS;
+extern unsigned long index;
+extern bool secBox;
 // Change here for time debug: 60000
-const long intervalM = 60000;
-const long intervalS = 1000;
+extern const long intervalM;
+extern const long intervalS;
 
 #endif

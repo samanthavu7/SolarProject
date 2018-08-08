@@ -21,6 +21,21 @@
 #endif
 #define SD_CS 10 //Chip select pin chosen independent of Arduino type
 
+// Runtime varibles.
+int solarTime = 0; //drying time
+int nextPosition = 0;
+
+// Time
+unsigned long pM = 0;
+unsigned long pS = 0;
+unsigned long index = 0;
+bool secBox = false;
+// Change here for time debug: 60000
+const long intervalM = 60000;
+const long intervalS = 1000;
+
+int relay1 = 31;
+int relay2 = 33;
 // Define file for SD card. **140 bytes per log session.
 File solarData;
 
@@ -86,7 +101,8 @@ void solar(){
       selectedButton = "";
       highlight();     
      
-      phase = Wait;
+      phase = Execute;
+      
       break;
 
     case Wait: // Listening for inputs.
@@ -196,8 +212,13 @@ void solar(){
       break;
       
     case Execute:
-      digitalWrite(relay1, HIGH);
-      digitalWrite(relay2, HIGH);
+//      digitalWrite(relay1, HIGH);
+//      digitalWrite(relay2, HIGH);
+      for (i=5;i<85;i++) {
+            dimming=i;
+            delay(20);
+      }
+      
       
       currentButton = "STOP"; 
       highlight();
@@ -214,8 +235,12 @@ void solar(){
       break;
       
     case Pause:
-      digitalWrite(relay1, LOW);
-      digitalWrite(relay2, LOW);
+//      digitalWrite(relay1, LOW);
+//      digitalWrite(relay2, LOW);
+      for (i=85;i>5;i--) {
+            dimming=i;
+            delay(20);
+      }
 
       if(solarTime <= 0){ //less than?
         phase = Initial;
@@ -296,6 +321,12 @@ void setup() {
   pinMode(buttonEnter, INPUT);
   //pinMode(buttonEmergency, INPUT);
   //pinMode(ledEmergency, OUTPUT);
+
+  pinMode(channel_1, OUTPUT);// Set AC Load pin as output
+  pinMode(channel_2, OUTPUT);// Set AC Load pin as output
+  attachInterrupt(21, zero_crosss_int, RISING);
+
+  // Serial.begin(9600);
 }
 
 void loop() {

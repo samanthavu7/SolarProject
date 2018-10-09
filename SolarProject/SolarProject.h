@@ -24,7 +24,5 @@ extern const long intervalS;
 extern const int channel_1_pin;  // Output to Opto Triac pin, channel 1
 extern const int channel_2_pin;  // Output to Opto Triac pin, channel 2
 extern const int sync_pin;       // This pin connects to the output of the zero crossing circuit
-extern int power_level_ch1;  // (0-100) User updates this variable to alter CH 1 output
-extern int power_level_ch2;  // (0-100) User updates this variable to alter CH 2 output [must use zero_cross_independent()]
 
 #endif

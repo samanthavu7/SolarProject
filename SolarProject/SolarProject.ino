@@ -36,6 +36,29 @@ const long intervalS = 1000;
 
 int relay1 = 31;
 int relay2 = 33;
+//speedcontrol variables
+int power_level_ch1 = 0;  // (0-100) User updates this variable to alter CH 1 output
+int power_level_ch2 = 0;  // (0-100) User updates this variable to alter CH 2 output [must use zero_cross_independent()]
+/*
+ * This function provides control to the two triacs. Only use power_level_ch1 if using this function.
+ */
+void zero_cross() {
+  if (power_level_ch1 <= 0) {
+    return;
+  }
+  if (power_level_ch1 > 98) {
+    power_level_ch1 = 98;
+  }
+  // Every zerocrossing: 60Hz (1/2 Cycle) => 8.33ms period
+  const int delay_time_ch1 = 8330 - (83 * power_level_ch1); // in microseconds
+  delayMicroseconds(delay_time_ch1);  // Off cycle for CH 1
+  digitalWrite(channel_1_pin, HIGH);   // Fire triac 1
+  digitalWrite(channel_2_pin, HIGH);   // Fire triac 2
+  delayMicroseconds(1);         // triac On propogation delay (depends on specs of triac)
+  digitalWrite(channel_1_pin, LOW);    // Turn triac 1 off
+  digitalWrite(channel_2_pin, LOW);    // Turn triac 2 off
+}
+
 
 const int channel_1_pin = 7;  // Output to Opto Triac pin, channel 1
 const int channel_2_pin = 8;  // Output to Opto Triac pin, channel 2
@@ -329,8 +352,8 @@ void setup() {
 
   pinMode(channel_1, OUTPUT);// Set AC Load pin as output
   pinMode(channel_2, OUTPUT);// Set AC Load pin as output
-  attachInterrupt(21, zero_crosss_int, RISING);
-
+  pinMode(sync_pin, INPUT);
+  attachInterrupt(digitalPinToInterrupt(sync_pin), zero_cross, RISING);
   // Serial.begin(9600);
 }
 

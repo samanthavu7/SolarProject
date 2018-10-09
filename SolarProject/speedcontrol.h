@@ -1,12 +1,7 @@
 #ifndef SPEEDCONTROL_H
 #define SPEEDCONTROL_H
 
-extern unsigned char channel_1;    // Output to Opto Triac pin, channel 1
-extern unsigned char channel_2;    // Output to Opto Triac pin, channel 2
-extern unsigned char dimming;      // Dimming level (0-100)
-extern unsigned char i;
-extern unsigned char flag;
-
-void zero_crosss_int();
+int power_level_ch1 = 0;  // (0-100) User updates this variable to alter CH 1 output
+int power_level_ch2 = 0;  // (0-100) User updates this variable to alter CH 2 output [must use zero_cross_independent()]
 
 #endif

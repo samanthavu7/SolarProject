@@ -36,6 +36,11 @@ const long intervalS = 1000;
 
 int relay1 = 31;
 int relay2 = 33;
+
+const int channel_1_pin = 7;  // Output to Opto Triac pin, channel 1
+const int channel_2_pin = 8;  // Output to Opto Triac pin, channel 2
+const int sync_pin = 2;       // This pin connects to the output of the zero crossing circuit
+
 // Define file for SD card. **140 bytes per log session.
 File solarData;
 

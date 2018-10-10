@@ -242,10 +242,6 @@ void solar(){
     case Execute:
 //      digitalWrite(relay1, HIGH);
 //      digitalWrite(relay2, HIGH);
-      for (i=5;i<85;i++) {
-            dimming=i;
-            delay(20);
-      }
       
       
       currentButton = "STOP"; 
@@ -265,10 +261,6 @@ void solar(){
     case Pause:
 //      digitalWrite(relay1, LOW);
 //      digitalWrite(relay2, LOW);
-      for (i=85;i>5;i--) {
-            dimming=i;
-            delay(20);
-      }
 
       if(solarTime <= 0){ //less than?
         phase = Initial;

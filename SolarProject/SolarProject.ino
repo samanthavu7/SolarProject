@@ -242,7 +242,8 @@ void solar(){
     case Execute:
 //      digitalWrite(relay1, HIGH);
 //      digitalWrite(relay2, HIGH);
-      
+
+      power_level_ch1 = 40; //make variable time
       
       currentButton = "STOP"; 
       highlight();
@@ -262,6 +263,8 @@ void solar(){
 //      digitalWrite(relay1, LOW);
 //      digitalWrite(relay2, LOW);
 
+      power_level_ch1 = 0;
+      
       if(solarTime <= 0){ //less than?
         phase = Initial;
         break;

@@ -34,8 +34,8 @@ bool secBox = false;
 const long intervalM = 60000;
 const long intervalS = 1000;
 
-int relay1 = 31;
-int relay2 = 33;
+//int relay1 = 31;
+//int relay2 = 33;
 //speedcontrol variables
 int power_level_ch1 = 0;  // (0-100) User updates this variable to alter CH 1 output
 int power_level_ch2 = 0;  // (0-100) User updates this variable to alter CH 2 output [must use zero_cross_independent()]
@@ -333,8 +333,8 @@ void setup() {
   //pinMode(button, INPUT);
 
   // Setup devices
-  pinMode(relay1, OUTPUT);
-  pinMode(relay2, OUTPUT);
+//  pinMode(relay1, OUTPUT);
+//  pinMode(relay2, OUTPUT);
    
   pinMode(buttonUp, INPUT);
   pinMode(buttonDown, INPUT);
@@ -342,8 +342,8 @@ void setup() {
   //pinMode(buttonEmergency, INPUT);
   //pinMode(ledEmergency, OUTPUT);
 
-  pinMode(channel_1, OUTPUT);// Set AC Load pin as output
-  pinMode(channel_2, OUTPUT);// Set AC Load pin as output
+  pinMode(channel_1_pin, OUTPUT);// Set AC Load pin as output
+  pinMode(channel_2_pin, OUTPUT);// Set AC Load pin as output
   pinMode(sync_pin, INPUT);
   attachInterrupt(digitalPinToInterrupt(sync_pin), zero_cross, RISING);
   // Serial.begin(9600);
@@ -403,4 +403,3 @@ void loop() {
   }
   solar();
 }
-

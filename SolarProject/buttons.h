@@ -25,4 +25,4 @@ extern bool barEntered; // If drying time bar is selected
 void initializeButtons();
 void highlight();  
 
-#endif __BUTTONS_H__
+#endif

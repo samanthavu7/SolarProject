@@ -243,7 +243,14 @@ void solar(){
 //      digitalWrite(relay1, HIGH);
 //      digitalWrite(relay2, HIGH);
 
-      power_level_ch1 = 40; //make variable time
+      for (int i = 0; i < 100; i++) { 
+        if (averageTemp() <= 50) {
+          power_level_ch1 = 10; 
+        }
+        else {
+          power_level_ch1 = 80;
+        }
+      }
       
       currentButton = "STOP"; 
       highlight();
@@ -263,7 +270,9 @@ void solar(){
 //      digitalWrite(relay1, LOW);
 //      digitalWrite(relay2, LOW);
 
-      power_level_ch1 = 0;
+      for (int i = 0; i < 100; i++) {
+        power_level_ch1 = 0;
+      }
       
       if(solarTime <= 0){ //less than?
         phase = Initial;

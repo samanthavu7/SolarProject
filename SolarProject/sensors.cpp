@@ -61,7 +61,42 @@ float solarEfficiency(){
 }
 
 float averageTemp(){
-  return t1;
+  float sum = 0.0;
+  float count = 0;
+  if (t1 != NAN) {
+    sum += t1;
+    count += 1;
+  }
+  if (t2 != NAN) {
+    sum += t2;
+    count += 1;
+  }
+  if (t3 != NAN) {
+    sum += t3;
+    count += 1;
+  }
+  if (t4 != NAN) {
+    sum += t4;
+    count += 1;
+  }
+  if (t5 != NAN) {
+    sum += t5;
+    count += 1;
+  }
+  if (t6 != NAN) {
+    sum += t6;
+    count += 1;
+  }
+  if (t7 != NAN) {
+    sum += t7;
+    count += 1;
+  }
+  if (t8 != NAN) {
+    sum += t8;
+    count += 1;
+  }
+
+  return sum / count;
   //return (t1 + t2 + t3 + t4 + t5 + t6 + t7 + t8) / 8;
 }
 

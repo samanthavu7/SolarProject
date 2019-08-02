@@ -12,6 +12,10 @@
 #include <SPI.h>
 #include <SD.h>
 #include "DHT.h"
+#include <pin_magic_MEGA.h>
+#include <registers.h>
+#include <OneWire.h> 
+#include <DallasTemperature.h>
 
 #define YP A3  // Analog only
 #define XM A2  // Analog only
@@ -70,37 +74,37 @@ int solarTime = 0;
 int nextPosition = 0;
 bool start = false;
 
-// Define the sensor type and pins.
+// Define the air sensor type and pins.
 #define DHTTYPE DHT22
 
-// There are total of 8 sensors in the system, create new class objects in respect to its pin number.
-#define DHT1 22
-#define DHT2 24
-#define DHT3 26
-#define DHT4 28
-#define DHT5 30
-#define DHT6 32
-#define DHT7 34
-#define DHT8 36
+// Temperature sensors
+#define DHT1 22 // ambient
+#define DHT2 24 // after solar collector
+#define DHT3 26 // center of closet
+
+// Water sensors
+#define W1 30 // ADD
+#define W2 32 // ADD
 
 DHT solar1(DHT1, DHTTYPE);
 DHT solar2(DHT2, DHTTYPE);
 DHT solar3(DHT3, DHTTYPE);
-DHT solar4(DHT4, DHTTYPE);
-DHT solar5(DHT5, DHTTYPE);
-DHT solar6(DHT6, DHTTYPE);
-DHT solar7(DHT7, DHTTYPE);
-DHT solar8(DHT8, DHTTYPE);
 
-// Define variables for: temperature, humidity, LEDs, relays, time, and symbols.
-float t1, t2, t3, t4, t5, t6, t7, t8 = 0.0;
-float h1, h2, h3, h4, h5, h6, h7, h8 = 0.0;
+OneWire w_wire1(W1);
+OneWire w_wire2(W2);
+
+DallasTemperature w_sensor1(&w_wire1);
+DallasTemperature w_sensor2(&w_wire2);
+
+float t1, t2, t3 = 0.0; // air temperatures
+float h1, h2, h3 = 0.0; // air humidities
+float w1, w2 = 0.0; // water temperatures
 char degree = '*';
 
-// Device pins: Odd numbers
+// Fan speed controller pins
 int sync_pin = 21;
-int channel_1_pin = 44; //23;
-int channel_2_pin = 45; //25;
+int channel_1_pin = 44; 
+int channel_2_pin = 45; 
 
 int power_level_ch1 = 0;  
 int power_level_ch2 = 0;
@@ -123,6 +127,7 @@ const long interval = 60000;
 // Initialize SD card.
 // 140 bytes per log session.
 File solarData;
+File waterData;
 
 // State Machine.
 enum Solar{Initial, Wait, Execute, Pause}phase;
@@ -200,11 +205,6 @@ void solar(){
         phase = Pause;
         break;
       }
-
-      /* ADDED: pause system when center closet sensor reads humidity <= 10% */
-      if(h4 <= 10.0) {
-        phase = Pause;
-      }
       
       // Refresh time.
       phase = (solarTime > 0) ? Execute : Pause;
@@ -238,6 +238,26 @@ void solar(){
   }
 }
 
+void water() {
+  Serial.println("R'Garden Temperature Readings"); 
+  Serial.print(" Requesting temperatures..."); 
+  w_sensor1.requestTemperatures(); // Send the command to get temperature readings
+  w_sensor2.requestTemperatures(); 
+  Serial.println("DONE");
+
+  t1 = w_sensor1.getTempCByIndex(0); 
+  t2 = w_sensor2.getTempCByIndex(0);
+  delay(1000);
+
+  if(waterData){
+    write_waterData();
+    waterData.close();
+  }
+  else{
+    Serial.println("Error: unable to open water.txt.");
+ }
+}
+
 void setup() {
   Serial.begin(9600);
   
@@ -268,11 +288,9 @@ void setup() {
   solar1.begin();
   solar2.begin();
   solar3.begin();
-  solar4.begin();
-  solar5.begin();
-  solar6.begin();
-  solar7.begin();
-  solar8.begin();
+
+  w_sensor1.begin();
+  w_sensor2.begin();
 
   createInterface(180);
   initializeButtons();
@@ -335,6 +353,7 @@ void loop() {
   }
   touch();
   solar();
+  water();
 }
 
 // Function used to debug touch points.
@@ -431,21 +450,11 @@ void readSensors(){
   t1 = solar1.readTemperature();
   t2 = solar2.readTemperature();
   t3 = solar3.readTemperature();
-  t4 = solar4.readTemperature();
-  t5 = solar5.readTemperature();
-  t6 = solar6.readTemperature();
-  t7 = solar7.readTemperature();
-  t8 = solar8.readTemperature();
 
   // Humidity.
   h1 = solar1.readHumidity();
   h2 = solar2.readHumidity();
   h3 = solar3.readHumidity();
-  h4 = solar4.readHumidity();
-  h5 = solar5.readHumidity();
-  h6 = solar6.readHumidity();
-  h7 = solar7.readHumidity();
-  h8 = solar8.readHumidity();
 }
 
 float solarEfficiency(){
@@ -474,25 +483,33 @@ float solarEfficiency(){
 }
 
 float averageTemp(){
-  return t2;
-  //return (t1 + t2 + t3 + t4 + t5 + t6 + t7 + t8) / 8;
+  return (t1 + t2 + t3) / 3;
 }
 
 float averageHumi(){
-  return h2;
-  //return (h1 + h2 + h3 + h4 + h5 + h6 + h7 + h8) / 8;
+  return (h1 + h2 + h3) / 3;
 }
 
 // Print function.
 void printData(){
+  Serial.println("1T(*C)\t1H(%)\t2T\t2H\t3T\t3H\n");
+  Serial.print(t1);
+  Serial.print("\t");
+  Serial.print(h1);
+  Serial.print("\t");
+  Serial.print(t2);
+  Serial.print("\t");
+  Serial.print(h2);
+  Serial.print("\t");
   Serial.print(t3);
-  Serial.print(" ");
-  Serial.println(h3);
+  Serial.print("\t");
+  Serial.print(h3);
+  Serial.print("\n");
 }
 
 // Write function.
 void writeData(){
-  solarData.println("1T(*C)\t1H(%)\t2T\t2H\t3T\t3H\t4T\t4H\n");
+  solarData.println("1T(*C)\t1H(%)\t2T\t2H\t3T\t3H\n");
   solarData.print(t1);
   solarData.print("\t");
   solarData.print(h1);
@@ -504,11 +521,19 @@ void writeData(){
   solarData.print(t3);
   solarData.print("\t");
   solarData.print(h3);
-  solarData.print("\t");
-  solarData.print(t4);
-  solarData.print("\t");
-  solarData.print(h4);
   solarData.print("\n");
+}
+
+void write_waterData(){
+  waterData.println("\tS1\tS2\t");
+  waterData.print("T\t"); 
+  waterData.print(t1);
+  waterData.print(degree);
+  waterData.print("C\t");
+  waterData.print(t2);
+  waterData.print(degree);
+  waterData.print("C\t");
+  waterData.println("\n");
 }
 
 void markers(){

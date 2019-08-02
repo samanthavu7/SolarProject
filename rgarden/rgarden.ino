@@ -22,11 +22,11 @@ File waterData;
 #include <OneWire.h> 
 #include <DallasTemperature.h>
 /********************************************************************/
-// Data wire is plugged into pins 2-5 on the Arduino 
-#define UNO 24 
-#define DOS 26
-#define TRES 28
-#define CUATRO 30
+#define UNO 24 // Inlet or city water
+#define DOS 26 // After water pump
+#define TRES 28 // After solar coils
+#define CUATRO 30 // Mixing point of hot solar coil water and ...
+const int solenoid = 32; /* ADDED: pin to control solenoid after solar coils */
 
 float t1, t2, t3, t4 = 0.0;
 char degree = '*';
@@ -62,12 +62,14 @@ void setup(void)
   }
   #endif
  
- Serial.println("Dallas Temperature IC Control Library Demo"); 
+ Serial.println("R'Garden Temperature Readings"); 
  // Start up the library 
  unoSensor.begin(); 
  dosSensor.begin();
  tresSensor.begin();
  cuatroSensor.begin();
+
+ pinMode(solenoid, OUTPUT); /* ADDED */
 } 
 void loop(void) 
 { 
@@ -81,22 +83,30 @@ void loop(void)
  cuatroSensor.requestTemperatures(); // Send the command to get temperature readings  
  Serial.println("DONE"); 
 
-t1 = unoSensor.getTempCByIndex(0); // Why "byIndex"?  
-t2 = dosSensor.getTempCByIndex(0); // Why "byIndex"? 
-t3 = tresSensor.getTempCByIndex(0); // Why "byIndex"? 
-t4 = cuatroSensor.getTempCByIndex(0); // Why "byIndex"? 
-   delay(1000); 
+ t1 = unoSensor.getTempCByIndex(0); // Why "byIndex"?  
+ t2 = dosSensor.getTempCByIndex(0); // Why "byIndex"? 
+ t3 = tresSensor.getTempCByIndex(0); // Why "byIndex"? 
+ t4 = cuatroSensor.getTempCByIndex(0); // Why "byIndex"? 
+ delay(1000); 
+
+ /* ADDED: opens solenoid valve when water reaches 100*C */
+ if(t3 >= 100.0) {
+  digitalWrite(solenoid, HIGH);
+ }
+ else {
+  digitalWrite(solenoid, LOW);
+ }
  
 /********************************************************************/
-      waterData = SD.open("water.txt", FILE_WRITE);
-      if(waterData){
-        writeData();
-        waterData.close();
-      }
-      else{
-        Serial.println("Error: unable to open water.txt.");
-      }
+ waterData = SD.open("water.txt", FILE_WRITE);
+ if(waterData){
+    writeData();
+    waterData.close();
  }
+ else{
+    Serial.println("Error: unable to open water.txt.");
+ }
+}
  /*******************************************************************/
  void writeData(){
   waterData.println("\tS1\tS2\tS3\tS4\t");
